@@ -1,0 +1,45 @@
+package org.apache.spark.util.gdc
+
+import java.io.OutputStream
+
+import org.apache.commons.io.IOUtils
+
+/**
+  * Created by alvsanand on 8/12/16.
+  */
+object DownloaderFactoryHelper {
+
+  def createDownloaderFactory(files: Seq[DownloadFile], listBadTries: Int = 0, downloadBadTries: Int = 0, splitInside: Boolean = false): DownloaderFactory[DownloadFile] = {
+    new DownloaderFactory[DownloadFile]() {
+      private var _downloadBadTries = downloadBadTries
+      private var _listBadTries = listBadTries
+      private var splitIndex = 0
+
+      override def get(downloaderParams: Map[String, String]): Downloader[DownloadFile] = new Downloader[DownloadFile]() {
+        override def list(): Seq[DownloadFile] = {
+          if (_listBadTries > 0) {
+            _listBadTries = _listBadTries - 1
+            throw new Exception(s"Waiting until _downloadBadTries[${_listBadTries}]==0")
+          }
+          else {
+            if (splitInside && splitIndex < files.size) {
+              splitIndex = splitIndex + 1
+
+              files.slice(0, splitIndex)
+            } else files
+          }
+        }
+
+        override def downloadFile(file: DownloadFile, out: OutputStream): Unit = {
+          if (_downloadBadTries > 0) {
+            _downloadBadTries = _downloadBadTries - 1
+            throw new Exception(s"Waiting until _downloadBadTries[${_downloadBadTries}]==0")
+          }
+          else
+            IOUtils.copy(getClass.getResourceAsStream(file.file), out)
+        }
+      }
+    }
+  }
+
+}
