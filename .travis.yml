@@ -24,4 +24,3 @@ script:
   - sbt ++$TRAVIS_SCALA_VERSION assembly
   - sbt ++$TRAVIS_SCALA_VERSION scalastyle
   - sbt ++$TRAVIS_SCALA_VERSION "test:scalastyle"
-  - sbt ++$TRAVIS_SCALA_VERSION mima-report-binary-issues
