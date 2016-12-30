@@ -42,4 +42,7 @@ groupId: org.apache.spark.generic-downloader-connector
 artifactId: gdc-google_2.11
 version: 0.1.0-SNAPSHOT
 ```
-```
+
+## Building From Source
+ 
+ To build the JAR files simply run `sbt package` from the project root. The build configuration includes support for both Scala 2.10 and 2.11.
