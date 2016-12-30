@@ -3,13 +3,63 @@
 val testSparkVersion = settingKey[String]("The version of Spark to test against.")
 
 lazy val commonSettings = Seq(
+  organization := "org.apache.spark.generic-downloader-connector",
   name := "gdc-main",
   version := "0.1.0-SNAPSHOT",
-  organization := "org.apache.spark.generic-downloader-connector",
+
   crossScalaVersions := Seq("2.10.5", "2.11.7"),
   scalaVersion := "2.11.7",
+
   sparkVersion := "1.6.0",
-  testSparkVersion := sys.props.get("spark.testVersion").getOrElse(sparkVersion.value)
+  sparkVersion := sys.props.get("spark.testVersion").getOrElse("1.5.2"),
+  testSparkVersion := sys.props.get("spark.testVersion").getOrElse(sparkVersion.value),
+
+  publishMavenStyle := true,
+
+  spIgnoreProvided := true,
+
+  spAppendScalaVersion := true,
+
+  spIncludeMaven := true,
+
+  parallelExecution in ThisBuild := false,
+
+  // Skip tests during assembly
+  test in assembly := {},
+
+  ScoverageSbtPlugin.ScoverageKeys.coverageHighlighting := {
+    if (scalaBinaryVersion.value == "2.10") false
+    else true
+  },
+  // publishTo := {
+  //  val nexus = "https://oss.sonatype.org/"
+  //  if (version.value.endsWith("SNAPSHOT")) {
+  //    Some("snapshots" at nexus + "content/repositories/snapshots")
+  //  }
+  //  else {
+  //    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  //  }
+  // }
+
+  pomExtra := (
+    <url>https://github.com/alvsanand/spark-generic-downloader-connector</url>
+      <licenses>
+        <license>
+          <name>Apache License, Version 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+      <scm>
+        <url>git@github.com:alvsanand/spark-generic-downloader-connector.git</url>
+        <connection>scm:git:git@github.com:alvsanand/spark-generic-downloader-connector.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>alvsanand</id>
+          <name>Alvaro Santos Andres</name>
+        </developer>
+      </developers>)
 )
 
 lazy val `gdc-core` = (project in file("gdc-core")).
@@ -28,7 +78,6 @@ lazy val `gdc-core` = (project in file("gdc-core")).
     name := "gdc-core",
     spName := "alvsanand/gdc-core",
 
-    sparkVersion := sys.props.get("spark.testVersion").getOrElse("1.5.2"),
     sparkComponents := Seq("core", "streaming")
   ).dependsOn()
 
@@ -55,49 +104,3 @@ lazy val root = (project in file(".")).
   settings(
     aggregate in update := false
   )
-
-publishMavenStyle := true
-
-spAppendScalaVersion := true
-
-spIncludeMaven := true
-
-parallelExecution in ThisBuild := false
-
-// Skip tests during assembly
-test in assembly := {}
-
-ScoverageSbtPlugin.ScoverageKeys.coverageHighlighting := {
-  if (scalaBinaryVersion.value == "2.10") false
-  else true
-}
-
-//publishTo := {
-//  val nexus = "https://oss.sonatype.org/"
-//  if (version.value.endsWith("SNAPSHOT")) {
-//    Some("snapshots" at nexus + "content/repositories/snapshots")
-//  }
-//  else {
-//    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-//  }
-//}
-
-pomExtra := (
-  <url>https://github.com/alvsanand/spark-generic-downloader-connector</url>
-    <licenses>
-      <license>
-        <name>Apache License, Version 2.0</name>
-        <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-        <distribution>repo</distribution>
-      </license>
-    </licenses>
-    <scm>
-      <url>git@github.com:alvsanand/spark-generic-downloader-connector.git</url>
-      <connection>scm:git:git@github.com:alvsanand/spark-generic-downloader-connector.git</connection>
-    </scm>
-    <developers>
-      <developer>
-        <id>alvsanand</id>
-        <name>Alvaro Santos Andres</name>
-      </developer>
-    </developers>)
