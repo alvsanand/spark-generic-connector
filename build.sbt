@@ -1,4 +1,3 @@
-
 lazy val commonSettings = Seq(
   name := "gdc-main",
   version := "0.1.0-SNAPSHOT",
@@ -11,7 +10,6 @@ lazy val `gdc-core` = (project in file("gdc-core")).
   settings(commonSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-library" % scalaVersion.value % "compile",
       "org.codehaus.plexus" % "plexus-archiver" % "2.2",
       "org.scalatest" %% "scalatest" % "2.2.1" % "test",
       "org.mockito" % "mockito-core" % "1.10.19" % "test"),
@@ -25,7 +23,6 @@ lazy val `gdc-google` = (project in file("gdc-google")).
   settings(commonSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-library" % scalaVersion.value % "compile",
       "com.google.api-client" % "google-api-client-java6" % "1.22.0",
       "com.google.apis" % "google-api-services-storage" % "v1-rev86-1.22.0",
       "com.google.http-client" % "google-http-client-jackson2" % "1.22.0",
