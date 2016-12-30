@@ -15,20 +15,27 @@
  * limitations under the License.
 */
 
-package org.apache.spark.streaming
-
-import org.apache.spark.SparkContext
-import org.apache.spark.annotation.DeveloperApi
+package es.alvsanand.gdc.core.util
 
 /**
-  * Created by alvsanand on 22/11/16.
+  * Created by alvsanand on 10/12/16.
   */
-package object gdc {
-  @DeveloperApi
-  implicit def toSparkContextFunctions(sc: SparkContext): GdcContext =
-    GdcContext(sc)
+object ReflectionUtils {
 
-  @DeveloperApi
-  implicit def toSparkContextFunctions(ssc: StreamingContext): GdcStreamContext =
-    GdcStreamContext(ssc)
+  sealed trait ReflectableObject {
+    def getV(name: String): Any
+
+    def setV(name: String, value: Any): Unit
+  }
+
+  implicit def reflector(ref: AnyRef): ReflectableObject = new ReflectableObject {
+    def getV(name: String): Any =
+      ref.getClass.getDeclaredMethods.find(_.getName == name).get.invoke(ref)
+
+    def setV(name: String, value: Any): Unit = {
+      val method = ref.getClass.getDeclaredMethods.find(_.getName == name + "_$eq").get
+      method.setAccessible(true)
+      method.invoke(ref, value.asInstanceOf[AnyRef])
+    }
+  }
 }

@@ -15,20 +15,18 @@
  * limitations under the License.
 */
 
-package org.apache.spark.streaming
+package es.alvsanand.gdc.google.cloud_storage
 
-import org.apache.spark.SparkContext
-import org.apache.spark.annotation.DeveloperApi
+import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory}
 
 /**
-  * Created by alvsanand on 22/11/16.
+  * Created by alvsanand on 10/12/16.
   */
-package object gdc {
-  @DeveloperApi
-  implicit def toSparkContextFunctions(sc: SparkContext): GdcContext =
-    GdcContext(sc)
 
-  @DeveloperApi
-  implicit def toSparkContextFunctions(ssc: StreamingContext): GdcStreamContext =
-    GdcStreamContext(ssc)
+object CloudStorageGdcDownloaderFactory extends GdcDownloaderFactory[CloudStorageFile] {
+  def get(gdcDownloaderParams: Map[String, String]): GdcDownloader[CloudStorageFile] = {
+    new CloudStorageGdcDownloader(
+      gdcDownloaderParams.get("credentialsPath").getOrElse(""),
+      gdcDownloaderParams.get("bucket").getOrElse(""))
+  }
 }

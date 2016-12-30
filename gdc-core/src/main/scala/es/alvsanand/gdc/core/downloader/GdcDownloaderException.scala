@@ -15,20 +15,16 @@
  * limitations under the License.
 */
 
-package org.apache.spark.streaming
-
-import org.apache.spark.SparkContext
-import org.apache.spark.annotation.DeveloperApi
+package es.alvsanand.gdc.core.downloader
 
 /**
-  * Created by alvsanand on 22/11/16.
+  * Created by alvsanand on 20/10/16.
   */
-package object gdc {
-  @DeveloperApi
-  implicit def toSparkContextFunctions(sc: SparkContext): GdcContext =
-    GdcContext(sc)
+class GdcDownloaderException private(message: String = null, cause: Throwable = null)
+  extends Exception(message, cause)
 
-  @DeveloperApi
-  implicit def toSparkContextFunctions(ssc: StreamingContext): GdcStreamContext =
-    GdcStreamContext(ssc)
+object GdcDownloaderException {
+  def apply(message: String = null, cause: Throwable = null): GdcDownloaderException = {
+    new GdcDownloaderException(message, cause)
+  }
 }

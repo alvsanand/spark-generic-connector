@@ -15,20 +15,14 @@
  * limitations under the License.
 */
 
-package org.apache.spark.streaming
+package es.alvsanand.gdc.google.cloud_storage
 
-import org.apache.spark.SparkContext
-import org.apache.spark.annotation.DeveloperApi
+import java.util.Date
+
+import es.alvsanand.gdc.core.downloader.GdcFile
 
 /**
-  * Created by alvsanand on 22/11/16.
+  * Created by alvsanand on 10/12/16.
   */
-package object gdc {
-  @DeveloperApi
-  implicit def toSparkContextFunctions(sc: SparkContext): GdcContext =
-    GdcContext(sc)
+case class CloudStorageFile(file: String, date: Option[Date] = None) extends GdcFile
 
-  @DeveloperApi
-  implicit def toSparkContextFunctions(ssc: StreamingContext): GdcStreamContext =
-    GdcStreamContext(ssc)
-}

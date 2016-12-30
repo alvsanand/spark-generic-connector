@@ -15,20 +15,16 @@
  * limitations under the License.
 */
 
-package org.apache.spark.streaming
+package es.alvsanand.gdc.google.dcm_data_transfer
 
-import org.apache.spark.SparkContext
-import org.apache.spark.annotation.DeveloperApi
+import java.util.Date
+
+import es.alvsanand.gdc.core.downloader.GdcFile
+import es.alvsanand.gdc.google.dcm_data_transfer.DataTransferFileTypes.DataTransferFileType
 
 /**
-  * Created by alvsanand on 22/11/16.
+  * Created by alvsanand on 10/12/16.
   */
-package object gdc {
-  @DeveloperApi
-  implicit def toSparkContextFunctions(sc: SparkContext): GdcContext =
-    GdcContext(sc)
+case class DataTransferFile(file: String, date: Option[Date] = None,
+                            ddtFileType: Option[DataTransferFileType] = None) extends GdcFile
 
-  @DeveloperApi
-  implicit def toSparkContextFunctions(ssc: StreamingContext): GdcStreamContext =
-    GdcStreamContext(ssc)
-}

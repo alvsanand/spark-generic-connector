@@ -8,7 +8,7 @@ addSbtPlugin("org.spark-packages" % "sbt-spark-package" % "0.2.2")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
 
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0" excludeAll(
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0" excludeAll (
   ExclusionRule(organization = "com.danieltrinh")))
 libraryDependencies += "org.scalariform" %% "scalariform" % "0.1.7"
 

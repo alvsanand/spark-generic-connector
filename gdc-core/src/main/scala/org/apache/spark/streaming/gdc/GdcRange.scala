@@ -1,7 +1,7 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
+ * this work for additional logInformation regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
@@ -15,20 +15,23 @@
  * limitations under the License.
 */
 
-package org.apache.spark.streaming
+package org.apache.spark.streaming.gdc
 
-import org.apache.spark.SparkContext
-import org.apache.spark.annotation.DeveloperApi
+import java.util.Date
 
-/**
-  * Created by alvsanand on 22/11/16.
-  */
-package object gdc {
-  @DeveloperApi
-  implicit def toSparkContextFunctions(sc: SparkContext): GdcContext =
-    GdcContext(sc)
+sealed trait GdcRange
 
-  @DeveloperApi
-  implicit def toSparkContextFunctions(ssc: StreamingContext): GdcStreamContext =
-    GdcStreamContext(ssc)
+object GdcRange {
+  def apply(date: Date, files: String*): GdcRange = {
+    new DateFilesGdcRange(date, files)
+  }
+
+  def apply(date: Date): GdcRange = {
+    new DateGdcRange(date)
+  }
+
+  case class DateFilesGdcRange(val date: Date, val files: Seq[String]) extends
+    GdcRange
+
+  case class DateGdcRange(val date: Date) extends GdcRange
 }
