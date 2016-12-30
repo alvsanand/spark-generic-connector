@@ -38,8 +38,9 @@ object GdcDownloaderFactoryHelper {
             _downloadBadTries = _downloadBadTries - 1
             throw new Exception(s"Waiting until _downloadBadTries[${_downloadBadTries}]==0")
           }
-          else
+          else {
             IOUtils.copy(getClass.getResourceAsStream(file.file), out)
+          }
         }
       }
     }
