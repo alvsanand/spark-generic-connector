@@ -2,7 +2,6 @@ lazy val commonSettings = Seq(
   name := "gdc-main",
   version := "0.1.0-SNAPSHOT",
   organization := "org.apache.spark.generic-downloader-connector",
-  scalaVersion := "2.11.7",
   crossScalaVersions := Seq("2.10.5", "2.11.7"),
   autoScalaLibrary := true
 )
