@@ -20,10 +20,10 @@ package org.apache.spark.streaming.gdc
 import java.util.Date
 
 import es.alvsanand.gdc.core.downloader.{GdcDownloaderFactory, GdcFile}
-import es.alvsanand.gdc.core.util.Retry
+import es.alvsanand.gdc.core.util.{Logging, Retry}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.SparkContext
 
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success}

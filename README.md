@@ -1,6 +1,6 @@
 # Generic Downloader Connector for Apache Spark
 
-> NOTE: just now it is only compatible with in Apache Spark 1.5.X and 1.6.X
+> NOTE: just now it is only compatible with in Apache Spark > 1.5.X and < 2.1.X
 
 This is a library which enable to connect for almost every Downloadable Files Source just implementing a simple Downloader.
 

@@ -144,18 +144,18 @@ class CloudStorageGdcDownloader(credentialsPath: String, bucket: String)
   }
 }
 
-object CloudStorageGdcDownloader {
-
-  def main(args: Array[String]): Unit = {
-    // /home/alvsanand/tmp dcdt_-dcm_account[0-9]+
-    // dcm_account[0-9]+_activity_20160922_20160923_042948_291626301.csv.gz
-    val credentialFile = args(0)
-    val bucket = args(1)
-    val file = args(2)
-
-    val downloader = new CloudStorageGdcDownloader(credentialFile, bucket)
-    // downloader.list().foreach(println)
-    downloader.download(CloudStorageFile(args(2)), new FileOutputStream(File.createTempFile
-    (file, ".tmp")))
-  }
-}
+//object CloudStorageGdcDownloader {
+//
+//  def main(args: Array[String]): Unit = {
+//    // /home/alvsanand/tmp dcdt_-dcm_account[0-9]+
+//    // dcm_account[0-9]+_activity_20160922_20160923_042948_291626301.csv.gz
+//    val credentialFile = args(0)
+//    val bucket = args(1)
+//    val file = args(2)
+//
+//    val downloader = new CloudStorageGdcDownloader(credentialFile, bucket)
+//    // downloader.list().foreach(println)
+//    downloader.download(CloudStorageFile(args(2)), new FileOutputStream(File.createTempFile
+//    (file, ".tmp")))
+//  }
+//}

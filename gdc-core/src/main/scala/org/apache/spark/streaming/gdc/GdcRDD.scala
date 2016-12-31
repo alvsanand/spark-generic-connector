@@ -25,11 +25,13 @@ import es.alvsanand.gdc.core.downloader.{GdcDownloaderException, GdcDownloaderFa
 import es.alvsanand.gdc.core.util.Retry
 import org.apache.spark._
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.executor.DataReadMethod
+import org.apache.spark.executor.{DataReadMethod, InputMetrics}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.util.ShutdownHookManager
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe._
+import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -52,11 +54,62 @@ class GdcRDD[A <: GdcFile : ClassTag](sc: SparkContext,
     val iter = new Iterator[String] {
       logInfo("Input partition: " + split)
 
-      val inputMetrics = context.taskMetrics.getInputMetricsForReadMethod(DataReadMethod.Network)
-
       val count = new AtomicLong
-      val bytesReadCallback = inputMetrics.bytesReadCallback.orElse(Some(() => count.get().toLong))
-      inputMetrics.setBytesReadCallback(bytesReadCallback)
+
+      // Create methods for updating statistics. Obligatory for Spark compatibility
+      val (updateBytesRead, updateRecordRead) = {
+        val mTM = ru.runtimeMirror(context.taskMetrics.getClass.getClassLoader)
+        val mTMImpl = mTM.reflect(context.taskMetrics)
+
+        ru.typeOf[org.apache.spark.executor.TaskMetrics]
+          .decl(ru.TermName("getInputMetricsForReadMethod")) match {
+          // Spark 1.5.x / 1.6.x
+          case sIM: MethodSymbol => {
+            val inputMetrics = mTMImpl.reflectMethod(sIM.asMethod)
+              .apply(DataReadMethod.Network).asInstanceOf[InputMetrics]
+
+            val mIM = ru.runtimeMirror(inputMetrics.getClass.getClassLoader)
+            val mIMImpl = mIM.reflect(inputMetrics)
+
+            val sSBRC = ru.typeOf[InputMetrics].decl(ru.TermName("setBytesReadCallback"))
+            mIMImpl.reflectMethod(sSBRC.asMethod)
+              .apply(Some(() => count.get().toLong))
+
+            (
+              () => {
+                Unit
+              },
+              () => {
+                inputMetrics.incRecordsRead(1)
+              }
+            )
+          }
+          // Spark 2.x
+          case NoSymbol => {
+            val sIM = ru.typeOf[org.apache.spark.executor.TaskMetrics]
+              .decl(ru.TermName("inputMetrics"))
+
+            val inputMetrics = mTMImpl.reflectField(sIM.asTerm)
+              .get.asInstanceOf[InputMetrics]
+
+            val mIM = ru.runtimeMirror(inputMetrics.getClass.getClassLoader)
+            val mIMImpl = mIM.reflect(inputMetrics)
+
+            val sSBRC = ru.typeOf[InputMetrics].decl(ru.TermName("setBytesRead"))
+
+            val existingBytesRead = inputMetrics.bytesRead
+
+            (() => {
+              mIMImpl.reflectMethod(sSBRC.asMethod)
+                .apply(existingBytesRead + count.get().toLong)
+            },
+              () => {
+                inputMetrics.incRecordsRead(1)
+              }
+            )
+          }
+        }
+      }
 
       context.addTaskCompletionListener(context => close())
       var havePair = false
@@ -102,7 +155,8 @@ class GdcRDD[A <: GdcFile : ClassTag](sc: SparkContext,
         val line = reader.readLine()
 
         if (!finished) {
-          inputMetrics.incRecordsRead(1)
+          updateRecordRead()
+          updateBytesRead()
           count.addAndGet(line.length)
         }
 
@@ -123,11 +177,8 @@ class GdcRDD[A <: GdcFile : ClassTag](sc: SparkContext,
           } finally {
             reader = null
           }
-          if (bytesReadCallback.isDefined) {
-            inputMetrics.updateBytesRead()
-          } else {
-            inputMetrics.incBytesRead(count.get())
-          }
+
+          updateBytesRead()
         }
       }
     }
