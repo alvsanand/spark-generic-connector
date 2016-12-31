@@ -144,7 +144,7 @@ Seq[DataTransferFileType] = Seq.empty) extends GdcDownloader[DataTransferFile] {
   }
 }
 
-//object DataTransferGdcDownloader {
+// object DataTransferGdcDownloader {
 //
 //  def main(args: Array[String]): Unit = {
 //    // /home/alvsanand/tmp dcdt_-dcm_account[0-9]+
@@ -158,4 +158,4 @@ Seq[DataTransferFileType] = Seq.empty) extends GdcDownloader[DataTransferFile] {
 //    downloader.download(DataTransferFile(args(2)),
 //      new FileOutputStream(File.createTempFile(file, ".tmp")))
 //  }
-//}
+// }

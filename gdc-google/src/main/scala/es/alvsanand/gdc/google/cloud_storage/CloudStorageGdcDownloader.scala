@@ -144,7 +144,7 @@ class CloudStorageGdcDownloader(credentialsPath: String, bucket: String)
   }
 }
 
-//object CloudStorageGdcDownloader {
+// object CloudStorageGdcDownloader {
 //
 //  def main(args: Array[String]): Unit = {
 //    // /home/alvsanand/tmp dcdt_-dcm_account[0-9]+
@@ -158,4 +158,4 @@ class CloudStorageGdcDownloader(credentialsPath: String, bucket: String)
 //    downloader.download(CloudStorageFile(args(2)), new FileOutputStream(File.createTempFile
 //    (file, ".tmp")))
 //  }
-//}
+// }
