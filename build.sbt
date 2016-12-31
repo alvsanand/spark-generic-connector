@@ -1,5 +1,6 @@
 
-val testSparkVersion = settingKey[String]("The version of Spark to test against.")
+val testSparkVersion_1_x = settingKey[String]("The version of Spark to test against.")
+val testSparkVersion_2_x = settingKey[String]("The version of Spark to test against.")
 
 lazy val commonSettings = Seq(
   organization := "es.alvsanand",
@@ -8,9 +9,6 @@ lazy val commonSettings = Seq(
 
   scalaVersion := "2.11.7",
   crossScalaVersions := Seq("2.10.5", "2.11.7"),
-
-  sparkVersion := "2.1.0",
-  testSparkVersion := sys.props.get("spark.testVersion").getOrElse(sparkVersion.value),
 
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-library" % scalaVersion.value % "compile",
@@ -69,17 +67,43 @@ lazy val commonSettings = Seq(
 lazy val `gdc-core` = (project in file("gdc-core")).
   settings(commonSettings: _*).
   settings(
-    libraryDependencies ++= Seq(
-      "org.codehaus.plexus" % "plexus-archiver" % "2.2",
-
-      "org.apache.spark" %% "spark-core" % testSparkVersion.value % "test" force(),
-      "org.apache.spark" %% "spark-sql" % testSparkVersion.value % "test" force()),
+    libraryDependencies ++= Seq(),
 
     name := "gdc-core",
+    spName := s"${organization.value}/${name.value}"
+  ).dependsOn()
+
+lazy val `gdc-spark_1_x` = (project in file("gdc-spark_1_x")).
+  settings(commonSettings: _*).
+  settings(
+    sparkVersion := "1.5.0",
+    testSparkVersion_1_x := sys.props.get("spark.testVersion_1_x").getOrElse(sparkVersion.value),
+
+    libraryDependencies ++= Seq(
+      "org.apache.spark" %% "spark-core" % testSparkVersion_1_x.value % "test" force(),
+      "org.apache.spark" %% "spark-sql" % testSparkVersion_1_x.value % "test" force()),
+
+    name := "gdc-spark_1_x",
     spName := s"${organization.value}/${name.value}",
 
     sparkComponents := Seq("core", "streaming")
-  ).dependsOn()
+  ).dependsOn(`gdc-core`)
+
+lazy val `gdc-spark_2_x` = (project in file("gdc-spark_2_x")).
+  settings(commonSettings: _*).
+  settings(
+    sparkVersion := "2.0.0",
+    testSparkVersion_2_x := sys.props.get("spark.testVersion_2_x").getOrElse(sparkVersion.value),
+
+    libraryDependencies ++= Seq(
+      "org.apache.spark" %% "spark-core" % testSparkVersion_2_x.value % "test" force(),
+      "org.apache.spark" %% "spark-sql" % testSparkVersion_2_x.value % "test" force()),
+
+    name := "gdc-spark_2_x",
+    spName := s"${organization.value}/${name.value}",
+
+    sparkComponents := Seq("core", "streaming")
+  ).dependsOn(`gdc-core`)
 
 lazy val `gdc-google` = (project in file("gdc-google")).
   settings(commonSettings: _*).
@@ -95,7 +119,7 @@ lazy val `gdc-google` = (project in file("gdc-google")).
   ).dependsOn(`gdc-core`)
 
 lazy val root = (project in file(".")).
-  aggregate(`gdc-core`, `gdc-google`).
+  aggregate(`gdc-core`, `gdc-spark_1_x`, `gdc-spark_2_x`, `gdc-google`).
   settings(
     aggregate in update := false
   )

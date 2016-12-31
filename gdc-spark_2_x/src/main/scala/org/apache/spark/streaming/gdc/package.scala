@@ -15,29 +15,20 @@
  * limitations under the License.
 */
 
-package es.alvsanand.gdc.core.util
+package org.apache.spark.streaming
 
-import scala.util.{Failure, Success, Try}
+import org.apache.spark.SparkContext
+import org.apache.spark.annotation.DeveloperApi
 
 /**
-  * Created by alvsanand on 27/06/16.
+  * Created by alvsanand on 22/11/16.
   */
-object Retry extends Logging {
+package object gdc {
+  @DeveloperApi
+  implicit def toSparkContextFunctions(sc: SparkContext): GdcContext =
+    GdcContext(sc)
 
-  @annotation.tailrec
-  def apply[T](n: Int, sleepTime: Int = 100)(fn: => T): Try[T] = {
-    Try {
-      fn
-    } match {
-      case x: Success[T] => x
-      case Failure(e) if n > 0 => {
-        logError(s"Received unexpected error. Retrying[sleepTime: $sleepTime], retries: $n", e)
-
-        Thread.sleep(sleepTime)
-
-        apply(n - 1, sleepTime)(fn)
-      }
-      case Failure(e) => Failure(e)
-    }
-  }
+  @DeveloperApi
+  implicit def toSparkContextFunctions(ssc: StreamingContext): GdcStreamContext =
+    GdcStreamContext(ssc)
 }

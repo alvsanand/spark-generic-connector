@@ -1,7 +1,7 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
+ * this work for additional logInformation regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
@@ -15,29 +15,23 @@
  * limitations under the License.
 */
 
-package es.alvsanand.gdc.core.util
+package org.apache.spark.streaming.gdc
 
-import scala.util.{Failure, Success, Try}
+import java.util.Date
 
-/**
-  * Created by alvsanand on 27/06/16.
-  */
-object Retry extends Logging {
+sealed trait GdcRange
 
-  @annotation.tailrec
-  def apply[T](n: Int, sleepTime: Int = 100)(fn: => T): Try[T] = {
-    Try {
-      fn
-    } match {
-      case x: Success[T] => x
-      case Failure(e) if n > 0 => {
-        logError(s"Received unexpected error. Retrying[sleepTime: $sleepTime], retries: $n", e)
-
-        Thread.sleep(sleepTime)
-
-        apply(n - 1, sleepTime)(fn)
-      }
-      case Failure(e) => Failure(e)
-    }
+object GdcRange {
+  def apply(date: Date, files: String*): GdcRange = {
+    new DateFilesGdcRange(date, files)
   }
+
+  def apply(date: Date): GdcRange = {
+    new DateGdcRange(date)
+  }
+
+  case class DateFilesGdcRange(val date: Date, val files: Seq[String]) extends
+    GdcRange
+
+  case class DateGdcRange(val date: Date) extends GdcRange
 }

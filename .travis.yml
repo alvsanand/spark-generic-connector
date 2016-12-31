@@ -5,36 +5,24 @@ cache:
     - $HOME/.ivy2
 matrix:
   include:
-    # Spark 1.5.0
     - jdk: openjdk7
       scala: 2.10.5
-      env: TEST_SPARK_VERSION="1.5.0"
+      env: TEST_SPARK_VERSION_1_X="1.5.0"
+      env: TEST_SPARK_VERSION_2_X="2.0.0"
     - jdk: openjdk7
       scala: 2.11.7
-      env: TEST_SPARK_VERSION="1.5.0"
-    # Spark 1.6.0
+      env: TEST_SPARK_VERSION_1_X="1.5.0"
+      env: TEST_SPARK_VERSION_2_X="2.0.0"
     - jdk: openjdk7
       scala: 2.10.5
-      env: TEST_SPARK_VERSION="1.6.0"
+      env: TEST_SPARK_VERSION_1_X="1.6.0"
+      env: TEST_SPARK_VERSION_2_X="2.1.0"
     - jdk: openjdk7
       scala: 2.11.7
-      env: TEST_SPARK_VERSION="1.6.0"
-    # Spark 2.0.0
-    - jdk: openjdk7
-      scala: 2.10.5
-      env: TEST_SPARK_VERSION="2.0.0"
-    - jdk: openjdk7
-      scala: 2.11.7
-      env: TEST_SPARK_VERSION="2.0.0"
-    # Spark 2.1.0
-    - jdk: openjdk7
-      scala: 2.10.5
-      env: TEST_SPARK_VERSION="2.1.0"
-    - jdk: openjdk7
-      scala: 2.11.7
-      env: TEST_SPARK_VERSION="2.1.0"
+      env: TEST_SPARK_VERSION_1_X="1.6.0"
+      env: TEST_SPARK_VERSION_2_X="2.1.0"
 script:
-  - sbt -Dspark.testVersion=$TEST_SPARK_VERSION ++$TRAVIS_SCALA_VERSION coverage test
+  - sbt -Dspark.testVersion_1_x=TEST_SPARK_VERSION_1_X  -Dspark.testVersion_2_x=TEST_SPARK_VERSION_2_X ++$TRAVIS_SCALA_VERSION clean coverage test
   - sbt ++$TRAVIS_SCALA_VERSION assembly
   - sbt ++$TRAVIS_SCALA_VERSION scalastyle
   - sbt ++$TRAVIS_SCALA_VERSION "test:scalastyle"
