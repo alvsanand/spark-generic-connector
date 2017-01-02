@@ -1,6 +1,10 @@
+val `testSparkVersion_1x` = settingKey[String]("The version of Spark to test against.")
+val `testSparkVersion_2x` = settingKey[String]("The version of Spark to test against.")
 
-val testSparkVersion_1_x = settingKey[String]("The version of Spark to test against.")
-val testSparkVersion_2_x = settingKey[String]("The version of Spark to test against.")
+val `defaultSparkVersion_1x` = settingKey[String]("The default version of Spark 1.x")
+val `defaultSparkVersion_2x` = settingKey[String]("The default version of Spark 2.x")
+
+val sparkVersion = settingKey[String]("The version of Spark")
 
 lazy val commonSettings = Seq(
   organization := "es.alvsanand",
@@ -8,7 +12,10 @@ lazy val commonSettings = Seq(
   version := "0.1.0-SNAPSHOT",
 
   scalaVersion := "2.11.7",
-  crossScalaVersions := Seq("2.10.5", "2.11.7"),
+  crossScalaVersions := Seq("2.10.5", "2.11.8"),
+
+  `defaultSparkVersion_1x` := "1.6.0",
+  `defaultSparkVersion_2x` := "2.1.0",
 
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-library" % scalaVersion.value % "compile",
@@ -17,12 +24,6 @@ lazy val commonSettings = Seq(
     "org.mockito" % "mockito-core" % "1.10.19" % "test"),
 
   publishMavenStyle := true,
-
-  spIgnoreProvided := true,
-
-  spAppendScalaVersion := true,
-
-  spIncludeMaven := true,
 
   parallelExecution in ThisBuild := false,
 
@@ -33,6 +34,8 @@ lazy val commonSettings = Seq(
     if (scalaBinaryVersion.value == "2.10") false
     else true
   },
+  ScoverageSbtPlugin.ScoverageKeys.coverageExcludedPackages := "",
+
   // publishTo := {
   //  val nexus = "https://oss.sonatype.org/"
   //  if (version.value.endsWith("SNAPSHOT")) {
@@ -41,7 +44,7 @@ lazy val commonSettings = Seq(
   //  else {
   //    Some("releases" at nexus + "service/local/staging/deploy/maven2")
   //  }
-  // }
+  // },
 
   pomExtra := (
     <url>https://github.com/alvsanand/spark-generic-downloader-connector</url>
@@ -67,59 +70,74 @@ lazy val commonSettings = Seq(
 lazy val `gdc-core` = (project in file("gdc-core")).
   settings(commonSettings: _*).
   settings(
-    libraryDependencies ++= Seq(),
-
     name := "gdc-core",
-    spName := s"${organization.value}/${name.value}"
+
+    libraryDependencies ++= Seq(
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "compile", // Included in Spark
+      "commons-io" % "commons-io" % "2.4" % "compile" // Included in Spark
+    )
   ).dependsOn()
 
-lazy val `gdc-spark_1_x` = (project in file("gdc-spark_1_x")).
+lazy val `gdc-spark_1x` = (project in file("gdc-spark_1x")).
   settings(commonSettings: _*).
   settings(
-    sparkVersion := "1.5.0",
-    testSparkVersion_1_x := sys.props.get("spark.testVersion_1_x").getOrElse(sparkVersion.value),
+    name := "gdc-spark_1x",
+
+    sparkVersion := `defaultSparkVersion_1x`.value,
+    `testSparkVersion_1x` := sys.props.get("spark.testVersion_1x").getOrElse(sparkVersion.value),
 
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % testSparkVersion_1_x.value % "test" force(),
-      "org.apache.spark" %% "spark-sql" % testSparkVersion_1_x.value % "test" force()),
+      "org.apache.spark" %% "spark-core" % `testSparkVersion_1x`.value % "compile",
+      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_1x`.value % "compile"
+    ),
 
-    name := "gdc-spark_1_x",
-    spName := s"${organization.value}/${name.value}",
-
-    sparkComponents := Seq("core", "streaming")
+    unmanagedSourceDirectories in Compile +=
+      baseDirectory.value.getParentFile() / "gdc-spark/src/main/scala",
+    unmanagedSourceDirectories in Test +=
+      baseDirectory.value.getParentFile() / "gdc-spark/src/test/scala",
+    unmanagedResourceDirectories in Compile +=
+      baseDirectory.value.getParentFile() / "gdc-spark/src/main/resources",
+    unmanagedResourceDirectories in Test +=
+      baseDirectory.value.getParentFile() / "gdc-spark/src/test/resources"
   ).dependsOn(`gdc-core`)
 
-lazy val `gdc-spark_2_x` = (project in file("gdc-spark_2_x")).
+lazy val `gdc-spark_2x` = (project in file("gdc-spark_2x")).
   settings(commonSettings: _*).
   settings(
-    sparkVersion := "2.0.0",
-    testSparkVersion_2_x := sys.props.get("spark.testVersion_2_x").getOrElse(sparkVersion.value),
+    name := "gdc-spark_2x",
+
+    sparkVersion := `defaultSparkVersion_2x`.value,
+    `testSparkVersion_2x` := sys.props.get("spark.testVersion_2x").getOrElse(sparkVersion.value),
 
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % testSparkVersion_2_x.value % "test" force(),
-      "org.apache.spark" %% "spark-sql" % testSparkVersion_2_x.value % "test" force()),
+      "org.apache.spark" %% "spark-core" % `testSparkVersion_2x`.value % "compile",
+      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_2x`.value % "compile"
+    ),
 
-    name := "gdc-spark_2_x",
-    spName := s"${organization.value}/${name.value}",
-
-    sparkComponents := Seq("core", "streaming")
+    unmanagedSourceDirectories in Compile +=
+      baseDirectory.value.getParentFile() / "gdc-spark/src/main/scala",
+    unmanagedSourceDirectories in Test +=
+      baseDirectory.value.getParentFile() / "gdc-spark/src/test/scala",
+    unmanagedResourceDirectories in Compile +=
+      baseDirectory.value.getParentFile() / "gdc-spark/src/main/resources",
+    unmanagedResourceDirectories in Test +=
+      baseDirectory.value.getParentFile() / "gdc-spark/src/test/resources"
   ).dependsOn(`gdc-core`)
 
 lazy val `gdc-google` = (project in file("gdc-google")).
   settings(commonSettings: _*).
   settings(
+    name := "gdc-google",
+
     libraryDependencies ++= Seq(
       "com.google.api-client" % "google-api-client-java6" % "1.22.0",
       "com.google.apis" % "google-api-services-storage" % "v1-rev86-1.22.0",
       "com.google.http-client" % "google-http-client-jackson2" % "1.22.0",
-      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0"),
-
-    name := "gdc-google",
-    spName := s"${organization.value}/${name.value}"
+      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0")
   ).dependsOn(`gdc-core`)
 
 lazy val root = (project in file(".")).
-  aggregate(`gdc-core`, `gdc-spark_1_x`, `gdc-spark_2_x`, `gdc-google`).
+  aggregate(`gdc-core`, `gdc-spark_1x`, `gdc-spark_2x`, `gdc-google`).
   settings(
     aggregate in update := false
   )

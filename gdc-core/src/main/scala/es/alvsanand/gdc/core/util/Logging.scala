@@ -17,10 +17,8 @@
 
 package es.alvsanand.gdc.core.util
 
-import org.apache.spark.annotation.DeveloperApi
 import org.slf4j.{Logger, LoggerFactory}
 
-@DeveloperApi
 trait Logging {
   // Make the log field transient so that objects with Logging can
   // be serialized and used on another machine

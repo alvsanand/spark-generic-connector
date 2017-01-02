@@ -7,18 +7,18 @@ matrix:
   include:
     - jdk: openjdk7
       scala: 2.10.5
-      env: TEST_SP_VER_1_X=1.5.0 TEST_SP_VER_2_X=2.0.0
+      env: TEST_SP_VER_1X=1.5.0 TEST_SP_VER_2X=2.0.0
     - jdk: openjdk7
-      scala: 2.11.7
-      env: TEST_SP_VER_1_X=1.5.0 TEST_SP_VER_2_X=2.0.0
+      scala: 2.11.8
+      env: TEST_SP_VER_1X=1.5.0 TEST_SP_VER_2X=2.0.0
     - jdk: openjdk7
       scala: 2.10.5
-      env: TEST_SP_VER_1_X=1.6.0 TEST_SP_VER_2_X=2.1.0
+      env: TEST_SP_VER_1X=1.6.0 TEST_SP_VER_2X=2.1.0
     - jdk: openjdk7
-      scala: 2.11.7
-      env: TEST_SP_VER_1_X=1.6.0 TEST_SP_VER_2_X=2.1.0
+      scala: 2.11.8
+      env: TEST_SP_VER_1X=1.6.0 TEST_SP_VER_2X=2.1.0
 script:
-  - sbt -Dspark.testVersion_1_x=$TEST_SP_VER_1_X  -Dspark.testVersion_2_x=$TEST_SP_VER_2_X ++$TRAVIS_SCALA_VERSION clean coverage test
+  - sbt -Dspark.testVersion_1x=$TEST_SP_VER_1X  -Dspark.testVersion_2x=$TEST_SP_VER_2X ++$TRAVIS_SCALA_VERSION clean coverage test
   - sbt ++$TRAVIS_SCALA_VERSION assembly
   - sbt ++$TRAVIS_SCALA_VERSION scalastyle
   - sbt ++$TRAVIS_SCALA_VERSION "test:scalastyle"

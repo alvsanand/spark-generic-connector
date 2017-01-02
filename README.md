@@ -1,6 +1,6 @@
 # Generic Downloader Connector for Apache Spark
 
-> NOTE: just now it is only compatible with in Apache Spark > 1.5.X and < 2.1.X
+> NOTE: just now it is only compatible with in Apache Spark > 1.5.X
 
 This is a library which enable to connect for almost every Downloadable Files Source just implementing a simple Downloader.
 
@@ -25,6 +25,35 @@ version: 0.1.0-SNAPSHOT
 ```
 groupId: org.apache.spark.generic-downloader-connector
 artifactId: gdc-main_2.11
+version: 0.1.0-SNAPSHOT
+
+### GDC SPARK 1.X
+
+#### Scala 2.10
+```
+groupId: org.apache.spark.generic-downloader-connector
+artifactId: gdc-spark_1x_2.10
+version: 0.1.0-SNAPSHOT
+```
+#### Scala 2.11
+```
+groupId: org.apache.spark.generic-downloader-connector
+artifactId: gdc-spark_1x_2.11
+version: 0.1.0-SNAPSHOT
+```
+
+### GDC SPARK 2.X
+
+#### Scala 2.10
+```
+groupId: org.apache.spark.generic-downloader-connector
+artifactId: gdc-spark_2x_2.10
+version: 0.1.0-SNAPSHOT
+```
+#### Scala 2.11
+```
+groupId: org.apache.spark.generic-downloader-connector
+artifactId: gdc-spark_2x_2.11
 version: 0.1.0-SNAPSHOT
 ```
 

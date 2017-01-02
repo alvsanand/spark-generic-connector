@@ -17,10 +17,8 @@
 
 package es.alvsanand.gdc.core.util
 
-import java.io.{File, IOException, InputStream}
+import java.io.{File, IOException, InputStream, OutputStream}
 import java.util.zip.GZIPInputStream
-
-import scala.tools.nsc.interpreter.OutputStream
 
 object IOUtils {
 
