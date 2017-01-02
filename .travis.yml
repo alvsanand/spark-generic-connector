@@ -19,6 +19,4 @@ matrix:
       env: TEST_SP_VER_1X=1.6.0 TEST_SP_VER_2X=2.1.0
 script:
   - sbt -Dspark.testVersion_1x=$TEST_SP_VER_1X  -Dspark.testVersion_2x=$TEST_SP_VER_2X ++$TRAVIS_SCALA_VERSION clean coverage test
-  - sbt ++$TRAVIS_SCALA_VERSION assembly
-  - sbt ++$TRAVIS_SCALA_VERSION scalastyle
-  - sbt ++$TRAVIS_SCALA_VERSION "test:scalastyle"
+  - sbt ++$TRAVIS_SCALA_VERSION scalastyle "test:scalastyle"
