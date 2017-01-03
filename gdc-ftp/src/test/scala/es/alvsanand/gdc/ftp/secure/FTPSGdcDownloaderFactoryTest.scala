@@ -15,11 +15,11 @@
  * limitations under the License.
 */
 
-package es.alvsanand.gdc.ftp
+package es.alvsanand.gdc.ftp.secure
 
 import org.scalatest._
 
-class FTPGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionValues
+class FTPSGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionValues
   with Inside with  Inspectors with BeforeAndAfterAll {
 
   private val parameters = Map[String, String](
@@ -30,32 +30,21 @@ class FTPGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionValu
     "directory" -> "directory"
   )
   private val clientParameters = Map(
-    "proxyEnabled" -> "true",
-    "proxyHost" -> "proxyHost",
-    "proxyPort" -> "1234",
-    "proxyUser" -> "proxyUser",
-    "proxyPassword" -> "proxyPassword",
-    "connectTimeout" -> "100",
+    "defaultTimeout" -> "100",
     "dataTimeout" -> "100"
   )
 
   it should "fail with obligatory parameters" in {
 
-    a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
+    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
       .get(parameters - "host"))
-    a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
+    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
       .get(parameters - "user"))
-    a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
+    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
       .get(parameters - "directory"))
   }
 
   it should "work with obligatory parameters" in {
-    noException should be thrownBy(FTPGdcDownloaderFactory.get(parameters))
-  }
-
-  it should "work with client parameters" in {
-    noException should be thrownBy(FTPGdcDownloaderFactory.get(parameters ++ clientParameters))
-    (FTPGdcDownloaderFactory.get(parameters ++ clientParameters))
-      .asInstanceOf[FTPGdcDownloader].usesProxy() should be(true)
+    noException should be thrownBy(FTPSGdcDownloaderFactory.get(parameters))
   }
 }

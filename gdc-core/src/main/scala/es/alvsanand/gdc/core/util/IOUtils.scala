@@ -17,7 +17,7 @@
 
 package es.alvsanand.gdc.core.util
 
-import java.io.{File, IOException, InputStream, OutputStream}
+import java.io._
 import java.util.zip.GZIPInputStream
 
 object IOUtils {
@@ -62,5 +62,9 @@ object IOUtils {
     }
 
     temp
+  }
+
+  def getInputStream(url: String): InputStream = {
+    new FileInputStream(url)
   }
 }

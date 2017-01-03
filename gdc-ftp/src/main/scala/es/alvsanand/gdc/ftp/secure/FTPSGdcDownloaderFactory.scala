@@ -15,25 +15,28 @@
  * limitations under the License.
 */
 
-package es.alvsanand.gdc.ftp
+package es.alvsanand.gdc.ftp.secure
 
 import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory}
+import es.alvsanand.gdc.ftp.{FTPFile, UserPasswordCredentials}
 
 /**
   * Created by alvsanand on 10/12/16.
   */
 
-object FTPGdcDownloaderFactory extends GdcDownloaderFactory[FTPFile] {
+object FTPSGdcDownloaderFactory extends GdcDownloaderFactory[FTPFile] {
   private val DEFAULT_FTP_PORT = "21"
 
   private val NOT_CLIENT_PARAMETERS = Set("host", "user", "port", "password", "directory")
 
   def get(gdcDownloaderParams: Map[String, String]): GdcDownloader[FTPFile] = {
-    new FTPGdcDownloader(
+    new FTPSGdcDownloader(
       gdcDownloaderParams.get("host").getOrElse(""),
       gdcDownloaderParams.get("port").getOrElse(DEFAULT_FTP_PORT).toInt,
-      gdcDownloaderParams.get("user").getOrElse(""),
-      gdcDownloaderParams.get("password").getOrElse(""),
+      UserPasswordCredentials(
+        gdcDownloaderParams.get("user").getOrElse(""),
+        gdcDownloaderParams.get("password").getOrElse("")
+      ),
       gdcDownloaderParams.get("directory").getOrElse(""),
       gdcDownloaderParams.filterNot {
         case (k, v) => NOT_CLIENT_PARAMETERS.contains(k)

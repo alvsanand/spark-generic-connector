@@ -15,21 +15,17 @@
  * limitations under the License.
 */
 
-package es.alvsanand.gdc.ftp
+package es.alvsanand.gdc.ftp.normal
 
-import java.io.{ByteArrayOutputStream, OutputStream}
+import java.io.ByteArrayOutputStream
 import java.nio.file.{Files, Paths}
 import java.text.SimpleDateFormat
-import java.util.Date
 
-import es.alvsanand.gdc.core.util.ReflectionUtils._
+import es.alvsanand.gdc.ftp.{FTPFile, UserPasswordCredentials}
 import org.apache.ftpserver.listener.ListenerFactory
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory
 import org.apache.ftpserver.usermanager.impl.BaseUser
 import org.apache.ftpserver.{FtpServer, FtpServerFactory}
-import org.mockito.Mockito
-import org.mockito.invocation.InvocationOnMock
-import org.mockito.stubbing.Answer
 import org.scalatest._
 
 class FTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues with Inside
@@ -81,15 +77,17 @@ class FTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues with
   it should "fail with empty parameters" in {
     a[IllegalArgumentException] shouldBe
       thrownBy(new FTPGdcDownloader(null, 0, null, null, null))
-    a[IllegalArgumentException] shouldBe thrownBy(new FTPGdcDownloader("", 0, null, null, null))
-    a[IllegalArgumentException] shouldBe thrownBy(new FTPGdcDownloader("", 1, "", null, null))
-    a[IllegalArgumentException] shouldBe thrownBy(new FTPGdcDownloader("", 1, "", "", null))
-    a[IllegalArgumentException] shouldBe thrownBy(new FTPGdcDownloader("", 1, "", "", ""))
+    a[IllegalArgumentException] shouldBe thrownBy(new FTPGdcDownloader("", 0, UserPasswordCredentials(null, null), null))
+    a[IllegalArgumentException] shouldBe thrownBy(new FTPGdcDownloader("", 1, UserPasswordCredentials("", null), null))
+    a[IllegalArgumentException] shouldBe thrownBy(new FTPGdcDownloader("", 1, UserPasswordCredentials("", ""), null))
+    a[IllegalArgumentException] shouldBe thrownBy(new FTPGdcDownloader("", 1, UserPasswordCredentials("", ""), ""))
   }
 
   it should "not fail with empty password" in {
-    noException should be thrownBy(new FTPGdcDownloader("AAA", 1, "BBB", null, "CCC"))
-    noException should be thrownBy(new FTPGdcDownloader("AAA", 1, "BBB", "", "CCC"))
+    noException should be thrownBy(
+      new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", null), "CCC"))
+    noException should be thrownBy(
+      new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", ""), "CCC"))
   }
 
   it should "not fail with client parameters" in {
@@ -111,11 +109,11 @@ class FTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues with
       "proxyPort" -> "1234"
     )
     val parametersD = Map(
-      "connectTimeout" -> "100",
+      "defaultTimeout" -> "100",
       "dataTimeout" -> "100"
     )
     val parametersE = Map(
-      "connectTimeout" -> "zzz",
+      "defaultTimeout" -> "zzz",
       "dataTimeout" -> "zzz"
     )
     val parametersF = Map(
@@ -123,43 +121,67 @@ class FTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues with
     )
     val parametersG = Map.empty[String, String]
 
-    noException should be thrownBy(new FTPGdcDownloader("AAA", 1, "BBB", "CCC", "DDD", parametersA))
-    noException should be thrownBy(new FTPGdcDownloader("AAA", 1, "BBB", "CCC", "DDD", parametersB))
-    noException should be thrownBy(new FTPGdcDownloader("AAA", 1, "BBB", "CCC", "DDD", parametersC))
-    noException should be thrownBy(new FTPGdcDownloader("AAA", 1, "BBB", "CCC", "DDD", parametersD))
-    noException should be thrownBy(new FTPGdcDownloader("AAA", 1, "BBB", "CCC", "DDD", parametersE))
-    noException should be thrownBy(new FTPGdcDownloader("AAA", 1, "BBB", "CCC", "DDD", parametersF))
-    noException should be thrownBy(new FTPGdcDownloader("AAA", 1, "BBB", "CCC", "DDD", parametersG))
+    noException should be thrownBy(
+      new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", "CCC"), "DDD", parametersA)
+      )
+    noException should be thrownBy(
+      new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", "CCC"), "DDD", parametersB)
+      )
+    noException should be thrownBy(
+      new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", "CCC"), "DDD", parametersC)
+      )
+    noException should be thrownBy(
+      new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", "CCC"), "DDD", parametersD)
+      )
+    noException should be thrownBy(
+      new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", "CCC"), "DDD", parametersE)
+      )
+    noException should be thrownBy(
+      new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", "CCC"), "DDD", parametersF)
+      )
+    noException should be thrownBy(
+      new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", "CCC"), "DDD", parametersG)
+      )
 
-    (new FTPGdcDownloader("AAA", 1, "BBB", "", "CCC")).usesProxy() should be(false)
-    (new FTPGdcDownloader("AAA", 1, "BBB", "", "CCC", parametersD)).usesProxy() should be(false)
-    (new FTPGdcDownloader("AAA", 1, "BBB", "", "CCC", parametersE)).usesProxy() should be(false)
-    (new FTPGdcDownloader("AAA", 1, "BBB", "", "CCC", parametersA)).usesProxy() should be(true)
-    (new FTPGdcDownloader("AAA", 1, "BBB", "", "CCC", parametersB)).usesProxy() should be(true)
-    (new FTPGdcDownloader("AAA", 1, "BBB", "", "CCC", parametersC)).usesProxy() should be(true)
+    (new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", ""), "CCC"))
+      .usesProxy() should be(false)
+    (new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", ""), "CCC", parametersD))
+      .usesProxy() should be(false)
+    (new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", ""), "CCC", parametersE))
+      .usesProxy() should be(false)
+    (new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", ""), "CCC", parametersA))
+      .usesProxy() should be(true)
+    (new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", ""), "CCC", parametersB))
+      .usesProxy() should be(true)
+    (new FTPGdcDownloader("AAA", 1, UserPasswordCredentials("BBB", ""), "CCC", parametersC))
+      .usesProxy() should be(true)
   }
 
   it should "work with test user and empty/not existing directory" in {
-    val downloader = new FTPGdcDownloader(HOST, PORT, TEST_USER, TEST_PASSWORD, TEST_EMPTY_DIR)
+    val downloader = new FTPGdcDownloader(HOST, PORT,
+      UserPasswordCredentials(TEST_USER, TEST_PASSWORD), TEST_EMPTY_DIR)
 
     downloader.list().map(_.file) should be(List[String]())
   }
 
   it should "work with anonymous user and existing directory" in {
-    val downloader = new FTPGdcDownloader(HOST, PORT, ANON_USER, ANON_PASSWORD, TEST_SAMPLES_DIR)
+    val downloader = new FTPGdcDownloader(HOST, PORT,
+      UserPasswordCredentials(ANON_USER, ANON_PASSWORD), TEST_SAMPLES_DIR)
 
     downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
   it should "work with test user and existing directory" in {
-    val downloader = new FTPGdcDownloader(HOST, PORT, TEST_USER, TEST_PASSWORD, TEST_SAMPLES_DIR)
+    val downloader = new FTPGdcDownloader(HOST, PORT,
+      UserPasswordCredentials(TEST_USER, TEST_PASSWORD), TEST_SAMPLES_DIR)
 
     downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
 
   it should "work with existing file" in {
-    val downloader = new FTPGdcDownloader(HOST, PORT, ANON_USER, ANON_PASSWORD, TEST_SAMPLES_DIR)
+    val downloader = new FTPGdcDownloader(HOST, PORT,
+      UserPasswordCredentials(ANON_USER, ANON_PASSWORD), TEST_SAMPLES_DIR)
 
     val fileName = s"sampleFile.txt"
     val file = s"$TEST_HOME_DIR/$TEST_SAMPLES_DIR/$fileName"
@@ -174,7 +196,8 @@ class FTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues with
   }
 
   it should "fail with bad file" in {
-    val downloader = new FTPGdcDownloader(HOST, PORT, ANON_USER, ANON_PASSWORD, TEST_SAMPLES_DIR)
+    val downloader = new FTPGdcDownloader(HOST, PORT,
+      UserPasswordCredentials(ANON_USER, ANON_PASSWORD), TEST_SAMPLES_DIR)
 
     val fileName = s"badSampleFile.txt"
     val out: ByteArrayOutputStream = new ByteArrayOutputStream

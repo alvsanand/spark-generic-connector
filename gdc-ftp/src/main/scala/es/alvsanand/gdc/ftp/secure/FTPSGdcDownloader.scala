@@ -15,13 +15,16 @@
  * limitations under the License.
 */
 
-package es.alvsanand.gdc.ftp
+package es.alvsanand.gdc.ftp.secure
 
 import java.io._
+import java.security.KeyStore
+import javax.net.ssl.KeyManagerFactory
 
 import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderException}
 import es.alvsanand.gdc.core.util.IOUtils
-import org.apache.commons.net.ftp.{FTPClient, FTPClientConfig, FTPHTTPClient, FTPReply}
+import es.alvsanand.gdc.ftp._
+import org.apache.commons.net.ftp.{FTPClient, FTPReply, FTPSClient}
 
 import scala.util.{Failure, Success, Try}
 
@@ -31,33 +34,31 @@ import scala.util.{Failure, Success, Try}
   */
 
 /**
+  * FTPS implementation od¡f GdcDownloader.
   *
+  * Note: it works in implicit mode.
   *
-  * @param host The host of the FTP server
-  * @param port The port of the FTP server
-  * @param user The user name used in the login
-  * @param password The password used in the login
-  * @param directory The directory path where the dowloader will find files
+  * @param host            The host of the FTP server
+  * @param _cred     The port of the FTP server
+  * @param directory       The directory path where the dowloader will find files
   * @param clientConfigMap FTPClient specific parameters:
   *                        <ul>
-  *                          <li><i>proxyEnabled</i>: HTTP proxy is enabled</li>
-  *                          <li><i>proxyHost</i>: HTTP proxy host</li>
-  *                          <li><i>proxyPort</i>: HTTP proxy port</li>
-  *                          <li><i>proxyUser</i>: HTTP proxy user name</li>
-  *                          <li><i>proxyPassword</i>: HTTP proxy password</li>
-  *                          <li>
-  *                            <i>connectTimeout</i>:
-  *                             the connection timeout to use (in ms).
-  *                          </li>
-  *                          <li>
-  *                            <i>dataTimeout</i>:
-  *                            the timeout used when opening a data connection socket (in ms).
-  *                          </li>
+  *                        <li>
+  *                        <i>defaultTimeout</i>: the default timeout to use (in ms). Default:
+  *                        120 seconds.
+  *                        </li>
+  *                        <li>
+  *                        <i>dataTimeout</i>: the timeout used of the data connection (in ms).
+  *                        Default: 1200 seconds.
+  *                        </li>
   *                        </ul>
   */
-class FTPGdcDownloader(host: String, port: Int, user: String, password: String,
-                       directory: String, clientConfigMap: Map[String, String] = Map.empty)
+class FTPSGdcDownloader(host: String, port: Int, cred: Credentials,
+                        directory: String, clientConfigMap: Map[String, String] = Map.empty)
   extends GdcDownloader[FTPFile] {
+
+  private val DEFAULT_TIMEOUT = 120000
+  private val DEFAULT_DATA_TIMEOUT = 1200000
 
   if (host == null || host == "") {
     throw new IllegalArgumentException("host cannot be empty")
@@ -67,65 +68,65 @@ class FTPGdcDownloader(host: String, port: Int, user: String, password: String,
     throw new IllegalArgumentException("port cannot be less than 1")
   }
 
-  if (user == null || user == "") {
-    throw new IllegalArgumentException("user cannot be empty")
+  if (cred == null) {
+    throw new IllegalArgumentException("credentials cannot be empty")
+  }
+
+  if (!cred.isInstanceOf[HasUserPassword]) {
+    throw new IllegalArgumentException("credentials must be of type UserPasswordCredentials")
+  }
+
+  val _credUP = cred.asInstanceOf[HasUserPassword]
+
+  var _credPK: HasPrivateKey = null
+  if (cred.isInstanceOf[HasPrivateKey]) {
+    _credPK = cred.asInstanceOf[HasPrivateKey]
   }
 
   if (directory == null || directory == "") {
     throw new IllegalArgumentException("directory cannot be empty")
   }
 
-  if (clientConfigMap.getOrElse("proxyEnabled", "false").toBoolean
-      && !clientConfigMap.contains("proxyHost")) {
-    throw new IllegalArgumentException("proxyHost cannot be empty if proxyEnabled is true")
-  }
-
-  if (clientConfigMap.getOrElse("proxyEnabled", "false").toBoolean
-    && !clientConfigMap.getOrElse("proxyPort", "").forall(_.isDigit)) {
-    throw new IllegalArgumentException("proxyPort must be number")
-  }
-
   private val client: FTPClient = initClient()
 
   private def initClient(): FTPClient = synchronized {
-    var client: FTPClient = null
+    logInfo(s"Initiating FTPDownloader[host: $host, user: ${_credUP.user}]")
 
-    logInfo(s"Initiating FTPDownloader[host: $host, user: $user]")
-
-    clientConfigMap.get("proxyEnabled") match {
-      case Some(proxyEnabled) if proxyEnabled.toBoolean => {
-        val proxyHost = clientConfigMap.getOrElse("proxyHost", "")
-        val proxyPort = clientConfigMap.getOrElse("proxyPort", "80").toInt
-        val proxyUser = clientConfigMap.getOrElse("proxyUser", "")
-        val proxyPassword = clientConfigMap.getOrElse("proxyPassword", "")
-
-        client = new FTPHTTPClient(proxyHost, proxyPort, proxyUser, proxyPassword)
-      }
-      case _ => client = new FTPClient()
-    }
+    val client: FTPSClient = new FTPSClient(_credPK!=null)
 
     client.enterLocalPassiveMode()
 
-    val ftpClientConfig = new FTPClientConfig()
+    var defaultTimeout = DEFAULT_DATA_TIMEOUT
+    var dataTimeout = DEFAULT_TIMEOUT
 
-    clientConfigMap.foreach{ case (k, v) => k match {
-        case "connectTimeout" if v.forall(_.isDigit) => client.setConnectTimeout(v.toInt)
-        case "dataTimeout" if v.forall(_.isDigit) => client.setDataTimeout(v.toInt)
+    clientConfigMap.foreach { case (k, v) => k match {
+        case "defaultTimeout" if v.forall(_.isDigit) => defaultTimeout = v.toInt
+        case "dataTimeout" if v.forall(_.isDigit) => dataTimeout = v.toInt
         case _ =>
       }
     }
-    client.configure(ftpClientConfig)
+    client.setDefaultTimeout(defaultTimeout)
+    client.setDataTimeout(dataTimeout)
 
-    logInfo(s"Initiated FTPDownloader[host: $host, user: $user]")
+    if(_credPK!=null){
+      val ks = KeyStore.getInstance(KeyStore.getDefaultType());
+      ks.load(IOUtils.getInputStream(_credPK.keystore), _credPK.keystorePassword.toCharArray);
+
+      val keyManagerFactory = KeyManagerFactory.getInstance("JKS");
+      keyManagerFactory.init(ks, null);
+
+      val keyManagers = keyManagerFactory.getKeyManagers();
+      client.setKeyManager(keyManagers(0))
+    }
+
+    logInfo(s"Initiated FTPDownloader[host: $host, user: ${_credUP.user}]")
 
     client
   }
 
-  def usesProxy(): Boolean = client.isInstanceOf[FTPHTTPClient]
-
   private def connect(): Unit = {
     if (!client.isConnected) {
-      logInfo(s"Connecting FTPDownloader[host: $host, user: $user]")
+      logInfo(s"Connecting FTPDownloader[host: $host, user: ${_credUP.user}]")
 
       client.connect(host, port);
 
@@ -134,22 +135,22 @@ class FTPGdcDownloader(host: String, port: Int, user: String, password: String,
       if (!FTPReply.isPositiveCompletion(reply)) {
         throw GdcDownloaderException(s"Error connecting to host[$host]: $reply");
       }
-      if (!client.login(user, password)) {
-        throw GdcDownloaderException(s"Error logging in to host[$host] and user[$user]");
+      if (!client.login(_credUP.user, _credUP.password)) {
+        throw GdcDownloaderException(s"Error logging in to host[$host] and user[${_credUP.user}]");
       }
 
-      logInfo(s"Connecting FTPDownloader[host: $host, user: $user]")
+      logInfo(s"Connecting FTPDownloader[host: $host, user: ${_credUP.user}]")
     }
   }
 
   private def disconnect(): Unit = {
-    logInfo(s"Disconnecting FTPDownloader[host: $host, user: $user]")
+    logInfo(s"Disconnecting FTPDownloader[host: $host, user: ${_credUP.user}]")
 
     if (client.isConnected) {
       client.disconnect()
     }
 
-    logInfo(s"Disconnecting FTPDownloader[host: $host, user: $user]")
+    logInfo(s"Disconnecting FTPDownloader[host: $host, user: ${_credUP.user}]")
   }
 
   private def useClient[T](func: () => T): T = {
@@ -219,6 +220,6 @@ class FTPGdcDownloader(host: String, port: Int, user: String, password: String,
   }
 }
 
-object FTPGdcDownloader {
+object FTPSGdcDownloader {
 
 }
