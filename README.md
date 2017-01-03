@@ -26,6 +26,7 @@ version: 0.1.0-SNAPSHOT
 groupId: org.apache.spark.generic-downloader-connector
 artifactId: gdc-main_2.11
 version: 0.1.0-SNAPSHOT
+```
 
 ### GDC SPARK 1.X
 
@@ -65,10 +66,25 @@ groupId: org.apache.spark.generic-downloader-connector
 artifactId: gdc-google_2.10
 version: 0.1.0-SNAPSHOT
 ```
-#### Scala 2.11
+#### Scala 2.11 [Google Cloud Storage / Doubleclick Datatranfers]
 ```
 groupId: org.apache.spark.generic-downloader-connector
 artifactId: gdc-google_2.11
+version: 0.1.0-SNAPSHOT
+```
+
+### GDC VFS [FTP / SFTP / FTPS]
+
+#### Scala 2.10
+```
+groupId: org.apache.spark.generic-downloader-connector
+artifactId: gdc-vfs_2.10
+version: 0.1.0-SNAPSHOT
+```
+#### Scala 2.11
+```
+groupId: org.apache.spark.generic-downloader-connector
+artifactId: gdc-vfs_2.11
 version: 0.1.0-SNAPSHOT
 ```
 

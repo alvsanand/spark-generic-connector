@@ -184,9 +184,9 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
   }
 
   it should "work with existing file" in {
-    val downloader = createDownloaderFile("/data_tranfer_files/sampleFile.txt")
+    val downloader = createDownloaderFile("/sample_files/sampleFile.txt")
 
-    val data = Files.readAllBytes(Paths.get(getClass.getResource("/data_tranfer_files/sampleFile" +
+    val data = Files.readAllBytes(Paths.get(getClass.getResource("/sample_files/sampleFile" +
       ".txt").getFile))
 
     val out: ByteArrayOutputStream = new ByteArrayOutputStream

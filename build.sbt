@@ -57,7 +57,8 @@ lazy val commonSettings = Seq(
       </licenses>
       <scm>
         <url>git@github.com:alvsanand/spark-generic-downloader-connector.git</url>
-        <connection>scm:git:git@github.com:alvsanand/spark-generic-downloader-connector.git</connection>
+        <connection>scm:git:git@github.com:alvsanand/spark-generic-downloader-connector
+          .git</connection>
       </scm>
       <developers>
         <developer>
@@ -73,7 +74,9 @@ lazy val `gdc-core` = (project in file("gdc-core")).
     name := "gdc-core",
 
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "compile", // Included in Spark
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "compile", // Included in Spark,
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "compile", // Included in Spark
+      "log4j" % "log4j" % "1.2.16" % "compile", // Included in Spark
       "commons-io" % "commons-io" % "2.4" % "compile" // Included in Spark
     )
   ).dependsOn()
@@ -88,7 +91,11 @@ lazy val `gdc-spark_1x` = (project in file("gdc-spark_1x")).
 
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % `testSparkVersion_1x`.value % "compile",
-      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_1x`.value % "compile"
+      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_1x`.value % "compile",
+
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "test",
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "test",
+      "log4j" % "log4j" % "1.2.16" % "test"
     ),
 
     unmanagedSourceDirectories in Compile +=
@@ -111,7 +118,11 @@ lazy val `gdc-spark_2x` = (project in file("gdc-spark_2x")).
 
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % `testSparkVersion_2x`.value % "compile",
-      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_2x`.value % "compile"
+      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_2x`.value % "compile",
+
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "test",
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "test",
+      "log4j" % "log4j" % "1.2.16" % "test"
     ),
 
     unmanagedSourceDirectories in Compile +=
@@ -133,11 +144,31 @@ lazy val `gdc-google` = (project in file("gdc-google")).
       "com.google.api-client" % "google-api-client-java6" % "1.22.0",
       "com.google.apis" % "google-api-services-storage" % "v1-rev86-1.22.0",
       "com.google.http-client" % "google-http-client-jackson2" % "1.22.0",
-      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0")
+      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0",
+
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "test",
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "test",
+      "log4j" % "log4j" % "1.2.16" % "test")
+  ).dependsOn(`gdc-core`)
+
+lazy val `gdc-ftp` = (project in file("gdc-ftp")).
+  settings(commonSettings: _*).
+  settings(
+    name := "gdc-ftp",
+
+    libraryDependencies ++= Seq(
+      "commons-net" % "commons-net" % "3.5",
+      "com.jcraft" % "jsch" % "0.1.54",
+
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "test",
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "test",
+      "log4j" % "log4j" % "1.2.16" % "test",
+      "org.apache.ftpserver" % "ftpserver-core" % "1.1.0" % "test",
+      "org.apache.sshd" % "sshd-core" % "1.3.0" % "test")
   ).dependsOn(`gdc-core`)
 
 lazy val root = (project in file(".")).
-  aggregate(`gdc-core`, `gdc-spark_1x`, `gdc-spark_2x`, `gdc-google`).
+  aggregate(`gdc-core`, `gdc-spark_1x`, `gdc-spark_2x`, `gdc-google`, `gdc-ftp`).
   settings(
     aggregate in update := false
   )
