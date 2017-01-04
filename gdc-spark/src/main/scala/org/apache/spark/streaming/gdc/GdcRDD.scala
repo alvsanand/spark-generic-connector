@@ -95,7 +95,7 @@ class GdcRDD[A <: GdcFile : ClassTag](sc: SparkContext,
 
         val line = reader.readLine()
 
-        if (!finished) {
+        if (!finished && line!=null) {
           metrics.updateRecordRead()
           metrics.updateBytesRead(line.length)
         }
