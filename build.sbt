@@ -74,6 +74,8 @@ lazy val `gdc-core` = (project in file("gdc-core")).
     name := "gdc-core",
 
     libraryDependencies ++= Seq(
+      "com.wix" %% "accord-core" % "0.6.1",
+
       "org.slf4j" % "slf4j-api" % "1.7.16" % "compile", // Included in Spark,
       "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "compile", // Included in Spark
       "log4j" % "log4j" % "1.2.16" % "compile", // Included in Spark

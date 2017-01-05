@@ -3,24 +3,9 @@ package es.alvsanand.gdc.ftp
 /**
   * Created by alvsanand on 3/01/17.
   */
-trait Credentials
+case class Credentials(user: String, password: Option[String] = None,
+                       keystore: Option[String] = None, keystorePassword: Option[String] = None) {
+  def hasKeystore(): Boolean = keystore.isDefined
 
-trait HasUserPassword {
-  def user: String
-  def password: String
+  override def toString: String = s"UserPasswordCredentials($user, ***, $keystore, ***)"
 }
-
-trait HasPrivateKey {
-  def keystore: String
-  def keystorePassword: String
-}
-
-case class PrivateKeyCredentials(keystore: String, keystorePassword: String)
-  extends Credentials with HasPrivateKey
-
-case class UserPasswordCredentials(user: String, password: String)
-  extends Credentials with HasUserPassword
-
-case class UserPasswordAndPrivateKeyCredentials(user: String, password: String,
-                                                keystore: String, keystorePassword: String)
-  extends Credentials with HasUserPassword with HasPrivateKey

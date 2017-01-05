@@ -17,7 +17,7 @@
 
 package org.apache.spark.streaming.gdc
 
-import es.alvsanand.gdc.core.downloader.{GdcDownloaderFactory, GdcFile}
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderFactory, GdcDownloaderParameters, GdcFile}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.InputDStream
@@ -30,11 +30,12 @@ import scala.reflect.ClassTag
 @DeveloperApi
 case class GdcStreamContext(@transient ssc: StreamingContext) {
 
-  def createDownloadStream[A <: GdcFile : ClassTag](gdcDownloaderFactory: GdcDownloaderFactory[A],
-                                                    gdcDownloaderParams: Map[String, String],
-                                                    fromGdcFileRange: Option[GdcRange] = None,
-                                                    charset: String = "UTF-8",
-                                                    maxRetries: Int = 3): InputDStream[String] =
-    new GdcInputDStream[A](ssc, gdcDownloaderFactory, gdcDownloaderParams,
+  def createDownloadStream[A <: GdcFile: ClassTag, B <: GdcDownloaderParameters: ClassTag]
+                                                  (gdcDownloaderFactory: GdcDownloaderFactory[A, B],
+                                                   gdcDownloaderParameters: B,
+                                                   fromGdcFileRange: Option[GdcRange] = None,
+                                                   charset: String = "UTF-8",
+                                                   maxRetries: Int = 3): InputDStream[String] =
+    new GdcInputDStream[A, B](ssc, gdcDownloaderFactory, gdcDownloaderParameters,
       fromGdcFileRange, charset, maxRetries)
 }

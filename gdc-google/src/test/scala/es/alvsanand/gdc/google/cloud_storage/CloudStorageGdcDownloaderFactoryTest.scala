@@ -24,21 +24,20 @@ class CloudStorageGdcDownloaderFactoryTest extends FlatSpec with Matchers with O
 
   it should "fail with empty parameters" in {
     a[IllegalArgumentException] shouldBe thrownBy(CloudStorageGdcDownloaderFactory
-      .get(Map[String, String]()))
+      .get(CloudStorageParameters(null, null)))
     a[IllegalArgumentException] shouldBe thrownBy(CloudStorageGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "")))
+      .get(CloudStorageParameters("FOO", null)))
     a[IllegalArgumentException] shouldBe thrownBy(CloudStorageGdcDownloaderFactory
-      .get(Map[String, String]("bucket" -> "")))
+      .get(CloudStorageParameters(null, "FOO")))
     a[IllegalArgumentException] shouldBe thrownBy(CloudStorageGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "", "bucket" -> "")))
+      .get(CloudStorageParameters("", "")))
     a[IllegalArgumentException] shouldBe thrownBy(CloudStorageGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "FOO", "bucket" -> "")))
+      .get(CloudStorageParameters("FOO", "")))
     a[IllegalArgumentException] shouldBe thrownBy(CloudStorageGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "", "bucket" -> "FOO")))
+      .get(CloudStorageParameters("", "FOO")))
   }
 
   it should "work with obligatory parameters" in {
-    CloudStorageGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "FOO", "bucket" -> "FOO")) should not be (null)
+    CloudStorageGdcDownloaderFactory.get(CloudStorageParameters("FOO", "FOO")) should not be (null)
   }
 }

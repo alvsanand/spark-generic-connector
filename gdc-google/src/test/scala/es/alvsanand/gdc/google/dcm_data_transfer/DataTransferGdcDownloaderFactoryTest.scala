@@ -24,21 +24,20 @@ class DataTransferGdcDownloaderFactoryTest extends FlatSpec with Matchers with O
 
   it should "fail with empty parameters" in {
     a[IllegalArgumentException] shouldBe thrownBy(DataTransferGdcDownloaderFactory
-      .get(Map[String, String]()))
+      .get(DataTransferParameters(null, null)))
     a[IllegalArgumentException] shouldBe thrownBy(DataTransferGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "")))
+      .get(DataTransferParameters("FOO", null)))
     a[IllegalArgumentException] shouldBe thrownBy(DataTransferGdcDownloaderFactory
-      .get(Map[String, String]("bucket" -> "")))
+      .get(DataTransferParameters(null, "FOO")))
     a[IllegalArgumentException] shouldBe thrownBy(DataTransferGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "", "bucket" -> "")))
+      .get(DataTransferParameters("", "")))
     a[IllegalArgumentException] shouldBe thrownBy(DataTransferGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "FOO", "bucket" -> "")))
+      .get(DataTransferParameters("FOO", "")))
     a[IllegalArgumentException] shouldBe thrownBy(DataTransferGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "", "bucket" -> "FOO")))
+      .get(DataTransferParameters("", "FOO")))
   }
 
   it should "work with obligatory parameters" in {
-    DataTransferGdcDownloaderFactory
-      .get(Map[String, String]("credentialsPath" -> "FOO", "bucket" -> "FOO")) should not be (null)
+    DataTransferGdcDownloaderFactory.get(DataTransferParameters("FOO", "FOO")) should not be (null)
   }
 }

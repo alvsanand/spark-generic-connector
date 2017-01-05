@@ -19,7 +19,7 @@ package org.apache.spark.streaming.gdc
 
 import java.util.Date
 
-import es.alvsanand.gdc.core.downloader.GdcFile
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderParameters, GdcFile}
 import es.alvsanand.gdc.core.util.{GdcDownloaderFactoryHelper, SparkTest}
 
 class GdcRDDTest extends SparkTest {
@@ -27,7 +27,7 @@ class GdcRDDTest extends SparkTest {
     val file = GdcFile("/files/example.txt", new Date)
 
     val rdd = new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
-    (file)), Map())
+    (file)), GdcDownloaderParameters())
 
     rdd.partitions should be(Array(new GdcRDDPartition(file, 0)))
   }
@@ -39,7 +39,7 @@ class GdcRDDTest extends SparkTest {
       GdcFile("/files/example_20161202.txt", new Date))
 
     val rdd = new GdcRDD(sc, files, GdcDownloaderFactoryHelper.createDownloaderFactory(files),
-      Map())
+      GdcDownloaderParameters())
     val partitions = rdd.partitions
 
     partitions.size should be(3)
@@ -55,7 +55,7 @@ class GdcRDDTest extends SparkTest {
     val file = GdcFile("/files/example.txt", new Date)
 
     val rdd = new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
-    (file)), Map())
+    (file)), GdcDownloaderParameters())
 
     rdd.count() should be(5)
     rdd.collect() should be(Array("LINE 001", "LINE 002", "LINE 003", "LINE 004", "LINE 005"))
@@ -67,7 +67,7 @@ class GdcRDDTest extends SparkTest {
       GdcFile("/files/example_20161202.txt", new Date))
 
     val rdd = new GdcRDD(sc, files, GdcDownloaderFactoryHelper.createDownloaderFactory(files),
-      Map())
+      GdcDownloaderParameters())
 
     rdd.count() should be(10)
     rdd.collect() should be(Array("LINE 001 - 20161201", "LINE 002 - 20161201", "LINE 003 - " +
@@ -83,7 +83,7 @@ class GdcRDDTest extends SparkTest {
 
     val rdd = new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
     (file),
-      downloadBadTries = 2), Map(), maxRetries = 2)
+      downloadBadTries = 2), GdcDownloaderParameters(), maxRetries = 2)
 
     rdd.count() should be(5)
     rdd.collect() should be(Array("LINE 001", "LINE 002", "LINE 003", "LINE 004", "LINE 005"))
@@ -95,7 +95,7 @@ class GdcRDDTest extends SparkTest {
     intercept[org.apache.spark.SparkException] {
       new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq(file),
         downloadBadTries =
-        2), Map(), maxRetries = 1).collect()
+        2), GdcDownloaderParameters(), maxRetries = 1).collect()
     }
   }
 
@@ -104,7 +104,7 @@ class GdcRDDTest extends SparkTest {
 
     intercept[org.apache.spark.SparkException] {
       new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq(file)),
-        Map()).collect()
+        GdcDownloaderParameters()).collect()
     }
   }
 
@@ -112,7 +112,7 @@ class GdcRDDTest extends SparkTest {
     val file = GdcFile("/files/example.txt.gz", new Date)
 
     val rdd = new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
-    (file)), Map())
+    (file)), GdcDownloaderParameters())
 
     rdd.count() should be(5)
     rdd.collect() should be(Array("LINE 001", "LINE 002", "LINE 003", "LINE 004", "LINE 005"))

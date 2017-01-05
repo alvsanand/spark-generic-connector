@@ -20,7 +20,7 @@ package org.apache.spark.streaming.gdc
 import java.io._
 import java.util.concurrent.atomic.AtomicLong
 
-import es.alvsanand.gdc.core.downloader.{GdcDownloaderException, GdcDownloaderFactory, GdcFile}
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderException, GdcDownloaderFactory, GdcDownloaderParameters, GdcFile}
 import es.alvsanand.gdc.core.util.{IOUtils, Retry}
 import org.apache.spark._
 import org.apache.spark.annotation.DeveloperApi
@@ -36,10 +36,10 @@ import scala.util.{Failure, Success, Try}
   * Created by alvsanand on 11/10/16.
   */
 private[gdc]
-class GdcRDD[A <: GdcFile : ClassTag](sc: SparkContext,
+class GdcRDD[A <: GdcFile: ClassTag, B <: GdcDownloaderParameters: ClassTag](sc: SparkContext,
                                       files: Array[A],
-                                      gdcDownloaderFactory: GdcDownloaderFactory[A],
-                                      gdcDownloaderParams: Map[String, String],
+                                      gdcDownloaderFactory: GdcDownloaderFactory[A, B],
+                                      parameters: B,
                                       charset: String = "UTF-8",
                                       maxRetries: Int = 3
                                      ) extends RDD[String](sc, Nil) with
@@ -128,7 +128,7 @@ class GdcRDD[A <: GdcFile : ClassTag](sc: SparkContext,
   private def gdcFile(gdcFile: A): ByteArrayOutputStream = {
     logInfo(s"Downloading file[$gdcFile]")
 
-    val gdcDownloader = gdcDownloaderFactory.get(gdcDownloaderParams)
+    val gdcDownloader = gdcDownloaderFactory.get(parameters)
 
     val outputStream = new ByteArrayOutputStream()
 

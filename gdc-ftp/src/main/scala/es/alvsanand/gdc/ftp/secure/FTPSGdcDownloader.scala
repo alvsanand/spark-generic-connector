@@ -21,136 +21,106 @@ import java.io._
 import java.security.KeyStore
 import javax.net.ssl.KeyManagerFactory
 
-import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderException}
+import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderException, GdcDownloaderParameters}
 import es.alvsanand.gdc.core.util.IOUtils
 import es.alvsanand.gdc.ftp._
 import org.apache.commons.net.ftp.{FTPClient, FTPReply, FTPSClient}
+import com.wix.accord.Validator
+import com.wix.accord.dsl.{be, _}
 
 import scala.util.{Failure, Success, Try}
 
-
 /**
-  * Created by alvsanand on 30/09/16.
-  */
-
-/**
-  * FTPS implementation od¡f GdcDownloader.
+  * FTPSGdcDownloader parameters.
   *
-  * Note: it works in implicit mode.
-  *
-  * @param host            The host of the FTP server
-  * @param _cred     The port of the FTP server
-  * @param directory       The directory path where the dowloader will find files
-  * @param clientConfigMap FTPClient specific parameters:
-  *                        <ul>
-  *                        <li>
-  *                        <i>defaultTimeout</i>: the default timeout to use (in ms). Default:
-  *                        120 seconds.
-  *                        </li>
-  *                        <li>
-  *                        <i>dataTimeout</i>: the timeout used of the data connection (in ms).
-  *                        Default: 1200 seconds.
-  *                        </li>
-  *                        </ul>
+  * @param host The host of the FTP server
+  * @param port The port of the FTP server. Default: 990.
+  * @param cred The used to log in the FTP server
+  * @param directory The directory path where the downloader will find files
+  * @param defaultTimeout the default timeout to use (in ms). Default: 120 seconds.
+  * @param dataTimeout The timeout used of the data connection (in ms). Default: 1200 seconds.
   */
-class FTPSGdcDownloader(host: String, port: Int, cred: Credentials,
-                        directory: String, clientConfigMap: Map[String, String] = Map.empty)
-  extends GdcDownloader[FTPFile] {
+case class FTPSParameters(host: String, port: Int = 990, directory: String,
+                          cred: Credentials, defaultTimeout: Int = 120000,
+                          dataTimeout: Int = 1200000)
+  extends GdcDownloaderParameters {
+}
 
-  private val DEFAULT_TIMEOUT = 120000
-  private val DEFAULT_DATA_TIMEOUT = 1200000
+private[secure]
+class FTPSGdcDownloader(parameters: FTPSParameters)
+  extends GdcDownloader[FTPFile, FTPSParameters](parameters) {
 
-  if (host == null || host == "") {
-    throw new IllegalArgumentException("host cannot be empty")
-  }
-
-  if (port < 0) {
-    throw new IllegalArgumentException("port cannot be less than 1")
-  }
-
-  if (cred == null) {
-    throw new IllegalArgumentException("credentials cannot be empty")
-  }
-
-  if (!cred.isInstanceOf[HasUserPassword]) {
-    throw new IllegalArgumentException("credentials must be of type UserPasswordCredentials")
-  }
-
-  val _credUP = cred.asInstanceOf[HasUserPassword]
-
-  var _credPK: HasPrivateKey = null
-  if (cred.isInstanceOf[HasPrivateKey]) {
-    _credPK = cred.asInstanceOf[HasPrivateKey]
-  }
-
-  if (directory == null || directory == "") {
-    throw new IllegalArgumentException("directory cannot be empty")
+  override def getValidator(): Validator[FTPSParameters] = {
+    validator[FTPSParameters] { p =>
+      p.host is notNull
+      p.host is notEmpty
+      p.port should be > 0
+      p.directory is notNull
+      p.directory is notEmpty
+      p.cred is notNull
+      if(p.cred!=null) p.cred.user is notNull
+      if(p.cred!=null) p.cred.user is notEmpty
+      p.defaultTimeout should be > 0
+      p.dataTimeout should be > 0
+    }
   }
 
   private val client: FTPClient = initClient()
 
   private def initClient(): FTPClient = synchronized {
-    logInfo(s"Initiating FTPDownloader[host: $host, user: ${_credUP.user}]")
+    logInfo(s"Initiating FTPDownloader[$parameters]")
 
-    val client: FTPSClient = new FTPSClient(_credPK!=null)
+    val client: FTPSClient = new FTPSClient(parameters.cred.hasKeystore())
 
     client.enterLocalPassiveMode()
 
-    var defaultTimeout = DEFAULT_DATA_TIMEOUT
-    var dataTimeout = DEFAULT_TIMEOUT
+    client.setDefaultTimeout(parameters.defaultTimeout)
+    client.setDataTimeout(parameters.dataTimeout)
 
-    clientConfigMap.foreach { case (k, v) => k match {
-        case "defaultTimeout" if v.forall(_.isDigit) => defaultTimeout = v.toInt
-        case "dataTimeout" if v.forall(_.isDigit) => dataTimeout = v.toInt
-        case _ =>
-      }
-    }
-    client.setDefaultTimeout(defaultTimeout)
-    client.setDataTimeout(dataTimeout)
+    if(parameters.cred.hasKeystore()){
+      val ks = KeyStore.getInstance(KeyStore.getDefaultType())
+      ks.load(IOUtils.getInputStream(parameters.cred.keystore.get),
+        parameters.cred.keystorePassword.getOrElse("").toCharArray)
 
-    if(_credPK!=null){
-      val ks = KeyStore.getInstance(KeyStore.getDefaultType());
-      ks.load(IOUtils.getInputStream(_credPK.keystore), _credPK.keystorePassword.toCharArray);
+      val keyManagerFactory = KeyManagerFactory.getInstance("JKS")
+      keyManagerFactory.init(ks, null)
 
-      val keyManagerFactory = KeyManagerFactory.getInstance("JKS");
-      keyManagerFactory.init(ks, null);
-
-      val keyManagers = keyManagerFactory.getKeyManagers();
+      val keyManagers = keyManagerFactory.getKeyManagers()
       client.setKeyManager(keyManagers(0))
     }
 
-    logInfo(s"Initiated FTPDownloader[host: $host, user: ${_credUP.user}]")
+    logInfo(s"Initiated FTPDownloader[$parameters]")
 
     client
   }
 
   private def connect(): Unit = {
     if (!client.isConnected) {
-      logInfo(s"Connecting FTPDownloader[host: $host, user: ${_credUP.user}]")
+      logInfo(s"Connecting FTPDownloader[$parameters]")
 
-      client.connect(host, port);
+      client.connect(parameters.host, parameters.port);
 
       val reply = client.getReplyCode();
 
       if (!FTPReply.isPositiveCompletion(reply)) {
-        throw GdcDownloaderException(s"Error connecting to host[$host]: $reply");
+        throw GdcDownloaderException(s"Error connecting to server: $reply")
       }
-      if (!client.login(_credUP.user, _credUP.password)) {
-        throw GdcDownloaderException(s"Error logging in to host[$host] and user[${_credUP.user}]");
+      if (!client.login(parameters.cred.user, parameters.cred.password.getOrElse(""))) {
+        throw GdcDownloaderException(s"Error logging in with user[${parameters.cred.user}]")
       }
 
-      logInfo(s"Connecting FTPDownloader[host: $host, user: ${_credUP.user}]")
+      logInfo(s"Connecting FTPDownloader[$parameters, user: ${parameters.cred.user}]")
     }
   }
 
   private def disconnect(): Unit = {
-    logInfo(s"Disconnecting FTPDownloader[host: $host, user: ${_credUP.user}]")
+    logInfo(s"Disconnecting FTPDownloader[$parameters]")
 
     if (client.isConnected) {
       client.disconnect()
     }
 
-    logInfo(s"Disconnecting FTPDownloader[host: $host, user: ${_credUP.user}]")
+    logInfo(s"Disconnecting FTPDownloader[$parameters]")
   }
 
   private def useClient[T](func: () => T): T = {
@@ -173,15 +143,15 @@ class FTPSGdcDownloader(host: String, port: Int, cred: Credentials,
     var files: Array[org.apache.commons.net.ftp.FTPFile] = Array.empty
 
     Try({
-      logDebug(s"Listing files of directory[$directory]")
+      logDebug(s"Listing files of directory[${parameters.directory}]")
 
       files = useClient[Array[org.apache.commons.net.ftp.FTPFile]](() => {
-        client.changeWorkingDirectory(directory)
+        client.changeWorkingDirectory(parameters.directory)
 
         client.listFiles(".")
       })
 
-      logDebug(s"Listed files of directory[$directory]: [${files.mkString(",")}]")
+      logDebug(s"Listed files of directory[${parameters.directory}]: [${files.mkString(",")}]")
 
       files.filter(_.isFile).map(x =>
         FTPFile(x.getName, Option(x.getTimestamp.getTime))
@@ -190,7 +160,7 @@ class FTPSGdcDownloader(host: String, port: Int, cred: Credentials,
     match {
       case Success(v) => v
       case Failure(e) => {
-        logError(s"Error listing files of directory[$directory]", e);
+        logError(s"Error listing files of directory[${parameters.directory}]", e)
         throw e
       }
     }
@@ -198,28 +168,24 @@ class FTPSGdcDownloader(host: String, port: Int, cred: Credentials,
 
   def download(file: FTPFile, out: OutputStream): Unit = {
     Try({
-      logDebug(s"Downloading file[$file] of directory[$directory]")
+      logDebug(s"Downloading file[$file] of directory[${parameters.directory}]")
 
       val in = useClient[InputStream](() => {
-        client.changeWorkingDirectory(directory)
+        client.changeWorkingDirectory(parameters.directory)
 
         client.retrieveFileStream(file.file)
       })
 
-      IOUtils.copy(in, out)
+      if (in != null) IOUtils.copy(in, out)
 
-      logDebug(s"Downloaded file[$file] of directory[$directory]")
+      logDebug(s"Downloaded file[$file] of directory[${parameters.directory}]")
     })
     match {
       case Success(v) =>
       case Failure(e) => {
-        logError(s"Error downloading file[$file] of directory[$directory]", e);
+        logError(s"Error downloading file[$file] of directory[${parameters.directory}]", e)
         throw e
       }
     }
   }
-}
-
-object FTPSGdcDownloader {
-
 }

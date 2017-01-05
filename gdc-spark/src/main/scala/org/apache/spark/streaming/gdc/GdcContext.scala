@@ -19,7 +19,7 @@ package org.apache.spark.streaming.gdc
 
 import java.util.Date
 
-import es.alvsanand.gdc.core.downloader.{GdcDownloaderFactory, GdcFile}
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderFactory, GdcDownloaderParameters, GdcFile}
 import es.alvsanand.gdc.core.util.{Logging, Retry}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
@@ -34,14 +34,15 @@ import scala.util.{Failure, Success}
 @DeveloperApi
 case class GdcContext(@transient sc: SparkContext) extends Logging {
 
-  def createDownloadRDD[A <: GdcFile : ClassTag](gdcDownloaderFactory: GdcDownloaderFactory[A],
-                                                 gdcDownloaderParams: Map[String, String],
+  def createDownloadRDD[A <: GdcFile: ClassTag, B <: GdcDownloaderParameters: ClassTag]
+                                                (gdcDownloaderFactory: GdcDownloaderFactory[A, B],
+                                                 parameters: B,
                                                  fromDate: Option[Date] = None,
                                                  toDate: Option[Date] = None,
                                                  charset: String = "UTF-8",
                                                  maxRetries: Int = 2
                                                 ): RDD[String] = {
-    val downloader = gdcDownloaderFactory.get(gdcDownloaderParams)
+    val downloader = gdcDownloaderFactory.get(parameters)
 
     Retry(maxRetries) {
       downloader.list()
@@ -57,7 +58,7 @@ case class GdcContext(@transient sc: SparkContext) extends Logging {
           sc.emptyRDD[String]
         }
         else {
-          new GdcRDD[A](sc, files, gdcDownloaderFactory, gdcDownloaderParams, charset, maxRetries)
+          new GdcRDD[A, B](sc, files, gdcDownloaderFactory, parameters, charset, maxRetries)
         }
       }
       case Failure(e) => {

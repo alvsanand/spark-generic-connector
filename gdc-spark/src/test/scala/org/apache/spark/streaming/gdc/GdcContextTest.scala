@@ -17,7 +17,7 @@
 
 package org.apache.spark.streaming.gdc
 
-import es.alvsanand.gdc.core.downloader.GdcFile
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderParameters, GdcFile}
 import es.alvsanand.gdc.core.util.{GdcDownloaderFactoryHelper, SparkTest}
 
 class GdcContextTest extends SparkTest {
@@ -28,7 +28,8 @@ class GdcContextTest extends SparkTest {
       GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
       GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files), Map())
+    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+      GdcDownloaderParameters())
     val partitions = rdd.partitions
 
     partitions.size should be(3)
@@ -46,8 +47,8 @@ class GdcContextTest extends SparkTest {
       GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
       GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files), Map
-    (), Option(dt.parse
+    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+      GdcDownloaderParameters(), Option(dt.parse
     ("2016-10-12 00:00:00")), Option(dt.parse("2016-10-13 00:00:01")))
     val partitions = rdd.partitions
 
@@ -64,8 +65,8 @@ class GdcContextTest extends SparkTest {
       GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
       GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files), Map
-    (), None, Option(dt
+    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+      GdcDownloaderParameters(), None, Option(dt
       .parse("2016-10-13 00:00:01")))
     val partitions = rdd.partitions
 
@@ -82,8 +83,8 @@ class GdcContextTest extends SparkTest {
       GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
       GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files), Map
-    (), Option(dt.parse
+    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+      GdcDownloaderParameters(), Option(dt.parse
     ("2016-10-12 00:00:00")), None)
     val partitions = rdd.partitions
 
@@ -100,8 +101,8 @@ class GdcContextTest extends SparkTest {
       GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
       GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files), Map
-    (), Option(dt.parse
+    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+      GdcDownloaderParameters(), Option(dt.parse
     ("2016-10-12 00:00:00")), Option(dt.parse("2016-10-12 23:59:59")))
     val partitions = rdd.partitions
 
@@ -116,8 +117,8 @@ class GdcContextTest extends SparkTest {
       GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
       GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files), Map
-    (), Option(dt.parse
+    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+      GdcDownloaderParameters(), Option(dt.parse
     ("2016-10-12 23:59:59")), Option(dt.parse("2016-10-13 00:00:01")))
     val partitions = rdd.partitions
 
@@ -132,8 +133,8 @@ class GdcContextTest extends SparkTest {
       GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
       GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files), Map
-    (), None, Option(dt
+    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+      GdcDownloaderParameters(), None, Option(dt
       .parse("2016-10-11 23:59:59")))
     val partitions = rdd.partitions
 

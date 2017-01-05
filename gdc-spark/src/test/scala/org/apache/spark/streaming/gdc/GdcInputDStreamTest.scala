@@ -19,7 +19,7 @@ package org.apache.spark.streaming.gdc
 
 import java.io.File
 
-import es.alvsanand.gdc.core.downloader.GdcFile
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderParameters, GdcFile}
 import es.alvsanand.gdc.core.util
 import es.alvsanand.gdc.core.util.{GdcDownloaderFactoryHelper, IOUtils, SparkTest}
 import org.apache.commons.io.FileUtils
@@ -61,7 +61,7 @@ class GdcInputDStreamTest extends SparkTest {
       val ssc = new StreamingContext(sc, batchTime)
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files)
-        , Map(), Option
+        , GdcDownloaderParameters(), Option
       (GdcRange(date)))
 
       ds.checkpoint(checkpointTime)
@@ -106,8 +106,7 @@ class GdcInputDStreamTest extends SparkTest {
       val ssc = new StreamingContext(sc, batchTime)
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
-        listBadTries = 1), Map
-      (), Option(GdcRange(date)))
+        listBadTries = 1), GdcDownloaderParameters(), Option(GdcRange(date)))
 
       ds.checkpoint(checkpointTime)
 
@@ -152,7 +151,7 @@ class GdcInputDStreamTest extends SparkTest {
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
         listBadTries = 100),
-        Map(), Option(GdcRange(date)), maxRetries = 1)
+        GdcDownloaderParameters(), Option(GdcRange(date)), maxRetries = 1)
 
       ds.checkpoint(checkpointTime)
 
@@ -196,7 +195,7 @@ class GdcInputDStreamTest extends SparkTest {
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
         downloadBadTries = 1),
-        Map(), Option(GdcRange(date)), maxRetries = 2)
+        GdcDownloaderParameters(), Option(GdcRange(date)), maxRetries = 2)
 
       ds.checkpoint(checkpointTime)
 
@@ -241,7 +240,7 @@ class GdcInputDStreamTest extends SparkTest {
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
         downloadBadTries =
-        100), Map(), Option(GdcRange(date)), maxRetries = 2)
+        100), GdcDownloaderParameters(), Option(GdcRange(date)), maxRetries = 2)
 
       ds.checkpoint(checkpointTime)
 
@@ -284,7 +283,7 @@ class GdcInputDStreamTest extends SparkTest {
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
         splitInside = false),
-        Map(), Option(GdcRange(date)))
+        GdcDownloaderParameters(), Option(GdcRange(date)))
 
       ds.checkpoint(checkpointTime)
 
@@ -327,7 +326,7 @@ class GdcInputDStreamTest extends SparkTest {
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
       (GdcFile
-      ("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")))), Map(), Option(GdcRange
+      ("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")))), GdcDownloaderParameters(), Option(GdcRange
       (date)))
 
       ds.checkpoint(checkpointTime)
@@ -358,7 +357,7 @@ class GdcInputDStreamTest extends SparkTest {
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
       (GdcFile
       ("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
-        GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))), Map(), Option
+        GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))), GdcDownloaderParameters(), Option
       (GdcRange(date)))
 
       ds.checkpoint(checkpointTime)
@@ -400,7 +399,7 @@ class GdcInputDStreamTest extends SparkTest {
       val ssc = new StreamingContext(sc, batchTime)
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files)
-        , Map(), Option
+        , GdcDownloaderParameters(), Option
       (GdcRange(date)))
 
       ds.checkpoint(checkpointTime)
@@ -445,7 +444,7 @@ class GdcInputDStreamTest extends SparkTest {
       val ssc = new StreamingContext(sc, batchTime)
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files)
-        , Map(), Option
+        , GdcDownloaderParameters(), Option
       (GdcRange(date)))
 
       ds.checkpoint(checkpointTime)
@@ -488,7 +487,7 @@ class GdcInputDStreamTest extends SparkTest {
 
       val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
         splitInside = true),
-        Map(), Option(GdcRange(date, "/files/example_20161201_1.txt")))
+        GdcDownloaderParameters(), Option(GdcRange(date, "/files/example_20161201_1.txt")))
 
       ds.checkpoint(checkpointTime)
 

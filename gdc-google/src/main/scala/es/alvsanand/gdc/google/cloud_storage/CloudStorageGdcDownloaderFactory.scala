@@ -23,10 +23,11 @@ import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory}
   * Created by alvsanand on 10/12/16.
   */
 
-object CloudStorageGdcDownloaderFactory extends GdcDownloaderFactory[CloudStorageFile] {
-  def get(gdcDownloaderParams: Map[String, String]): GdcDownloader[CloudStorageFile] = {
-    new CloudStorageGdcDownloader(
-      gdcDownloaderParams.get("credentialsPath").getOrElse(""),
-      gdcDownloaderParams.get("bucket").getOrElse(""))
+object CloudStorageGdcDownloaderFactory
+    extends GdcDownloaderFactory[CloudStorageFile, CloudStorageParameters] {
+
+  def get(parameters: CloudStorageParameters):
+      GdcDownloader[CloudStorageFile, CloudStorageParameters] = {
+    new CloudStorageGdcDownloader(parameters)
   }
 }

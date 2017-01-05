@@ -40,8 +40,7 @@ class CloudStorageGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
   val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   private def createDownloaderList(files: List[(String, Date)]): CloudStorageGdcDownloader = {
-    val downloader: CloudStorageGdcDownloader = new CloudStorageGdcDownloader("log4j_test.xml",
-      "bucket");
+    val downloader = new CloudStorageGdcDownloader(CloudStorageParameters("FOO", "FOO"))
 
     val mockBuilder: Storage = Mockito.mock(classOf[Storage])
 
@@ -64,7 +63,7 @@ class CloudStorageGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
                 val objects = new com.google.api.services.storage.model.Objects
 
                 objects.setItems(files.map(f => {
-                  val so = new StorageObject();
+                  val so = new StorageObject()
                   so.setName(f._1);
                   so.setTimeCreated(new DateTime(f._2, TimeZone.getTimeZone("GMT")))
                   so
@@ -85,22 +84,8 @@ class CloudStorageGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
     downloader
   }
 
-  it should "fail with empty parameters" in {
-    a[IllegalArgumentException] shouldBe thrownBy(new CloudStorageGdcDownloader("FOO", null))
-    a[IllegalArgumentException] shouldBe thrownBy(new CloudStorageGdcDownloader("FOO", ""))
-    a[IllegalArgumentException] shouldBe thrownBy(new CloudStorageGdcDownloader(null, "FOO"))
-    a[IllegalArgumentException] shouldBe thrownBy(new CloudStorageGdcDownloader("", "FOO"))
-  }
-
-  it should "work with empty list" in {
-    val downloader = createDownloaderList(List[(String, Date)]())
-
-    downloader.list() should be(List[String]())
-  }
-
   private def createDownloaderFile(file: String): CloudStorageGdcDownloader = {
-    val downloader: CloudStorageGdcDownloader = new CloudStorageGdcDownloader("log4j_test.xml",
-      "bucket");
+    val downloader = new CloudStorageGdcDownloader(CloudStorageParameters("FOO", "FOO"))
 
     val mockBuilder: Storage = Mockito.mock(classOf[Storage])
 
@@ -147,6 +132,22 @@ class CloudStorageGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
     downloader
   }
 
+  it should "fail with empty parameters" in {
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new CloudStorageGdcDownloader(CloudStorageParameters("FOO", null)))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new CloudStorageGdcDownloader(CloudStorageParameters("FOO", "")))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new CloudStorageGdcDownloader(CloudStorageParameters(null, "FOO")))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new CloudStorageGdcDownloader(CloudStorageParameters("", "FOO")))
+  }
+
+  it should "work with empty list" in {
+    val downloader = createDownloaderList(List[(String, Date)]())
+
+    downloader.list() should be(List[String]())
+  }
 
   it should "work with simple list" in {
     val downloader = createDownloaderList(List[(String, Date)](("FILE_A.txt", sdf.parse

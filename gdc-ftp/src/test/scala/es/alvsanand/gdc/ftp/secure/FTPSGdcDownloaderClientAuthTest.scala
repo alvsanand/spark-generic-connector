@@ -17,11 +17,6 @@
 
 package es.alvsanand.gdc.ftp.secure
 
-import java.io.ByteArrayOutputStream
-import java.nio.file.{Files, Paths}
-import java.text.SimpleDateFormat
-
-import es.alvsanand.gdc.ftp.{FTPFile, UserPasswordAndPrivateKeyCredentials}
 import org.apache.commons.io.FileUtils
 import org.apache.ftpserver.listener.ListenerFactory
 import org.apache.ftpserver.ssl.SslConfigurationFactory

@@ -19,7 +19,7 @@ package org.apache.spark.streaming.gdc
 
 import java.io.{IOException, ObjectInputStream}
 
-import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory, GdcFile}
+import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory, GdcDownloaderParameters, GdcFile}
 import es.alvsanand.gdc.core.util.Retry
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream._
@@ -38,19 +38,17 @@ import scala.util.{Failure, Success}
   * Created by alvsanand on 6/10/16.
   */
 private[gdc]
-final class GdcInputDStream[A <: GdcFile : ClassTag](
-                                                      ssc_ : StreamingContext,
-                                                      gdcDownloaderFactory:
-                                                      GdcDownloaderFactory[A],
-                                                      gdcDownloaderParams: Map[String,
-                                                        String],
-                                                      fromGdcRange:
-                                                      Option[GdcRange] = None,
-                                                      charset: String = "UTF-8",
-                                                      maxRetries: Int = 3)
+final class GdcInputDStream[A <: GdcFile: ClassTag, B <: GdcDownloaderParameters: ClassTag](
+                                                  ssc_ : StreamingContext,
+                                                  gdcDownloaderFactory: GdcDownloaderFactory[A, B],
+                                                  parameters: B,
+                                                  fromGdcRange:
+                                                  Option[GdcRange] = None,
+                                                  charset: String = "UTF-8",
+                                                  maxRetries: Int = 3)
   extends InputDStream[String](ssc_) {
   private[streaming] override val checkpointData = new DownloaderInputDStreamCheckpointData
-  @transient private var _gdcDownloader: GdcDownloader[A] = null
+  @transient private var _gdcDownloader: GdcDownloader[A, B] = null
 
   // Remember the last 100 batches
   remember(slideDuration * 100)
@@ -85,7 +83,7 @@ final class GdcInputDStream[A <: GdcFile : ClassTag](
 
           val metadata = Map(
             "files" -> newFiles,
-            "gdcDownloaderParams" -> gdcDownloaderParams.toSeq.sorted.mkString(","),
+            "gdcDownloaderParameters" -> parameters,
             "fromGdcRange" -> fromGdcRange,
             StreamInputInfo.METADATA_KEY_DESCRIPTION -> newFiles.mkString("\n"))
           val inputInfo = StreamInputInfo(id, rdd.count, metadata)
@@ -105,7 +103,7 @@ final class GdcInputDStream[A <: GdcFile : ClassTag](
 
   private def gdcDownloader = {
     if (_gdcDownloader == null) {
-      _gdcDownloader = gdcDownloaderFactory.get(gdcDownloaderParams)
+      _gdcDownloader = gdcDownloaderFactory.get(parameters)
     }
     _gdcDownloader
   }
@@ -145,8 +143,8 @@ final class GdcInputDStream[A <: GdcFile : ClassTag](
   }
 
   private def filesToRDD(files: Array[A]): RDD[String] = {
-    new GdcRDD[A](context.sparkContext, files, gdcDownloaderFactory,
-      gdcDownloaderParams, charset, maxRetries)
+    new GdcRDD[A, B](context.sparkContext, files, gdcDownloaderFactory,
+      parameters, charset, maxRetries)
   }
 
   override def start(): Unit = {

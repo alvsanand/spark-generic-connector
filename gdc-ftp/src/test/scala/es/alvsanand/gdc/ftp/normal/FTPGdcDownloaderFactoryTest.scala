@@ -17,45 +17,61 @@
 
 package es.alvsanand.gdc.ftp.normal
 
+import es.alvsanand.gdc.ftp.Credentials
 import org.scalatest._
 
 class FTPGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionValues
   with Inside with  Inspectors with BeforeAndAfterAll {
 
-  private val parameters = Map[String, String](
-    "host" -> "host",
-    "port" -> "1",
-    "user" -> "user",
-    "password" -> "password",
-    "directory" -> "directory"
-  )
-  private val clientParameters = Map(
-    "proxyEnabled" -> "true",
-    "proxyHost" -> "proxyHost",
-    "proxyPort" -> "1234",
-    "proxyUser" -> "proxyUser",
-    "proxyPassword" -> "proxyPassword",
-    "defaultTimeout" -> "100",
-    "dataTimeout" -> "100"
-  )
-
   it should "fail with obligatory parameters" in {
-
     a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
-      .get(parameters - "host"))
+      .get(FTPParameters(null, 21, null, null)))
     a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
-      .get(parameters - "user"))
+      .get(FTPParameters("host", 21, null, null)))
     a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
-      .get(parameters - "directory"))
+      .get(FTPParameters("host", 21, "directory", null)))
+    a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
+      .get(FTPParameters("host", 21, "directory", Credentials(null))))
+    a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
+      .get(FTPParameters("host", 21, "directory", Credentials("user"), proxyEnabled = true)))
   }
 
   it should "work with obligatory parameters" in {
-    noException should be thrownBy(FTPGdcDownloaderFactory.get(parameters))
+    noException should be thrownBy(
+      FTPGdcDownloaderFactory.get(FTPParameters("host", 21, "directory", Credentials("user")))
+      )
+    noException should be thrownBy(
+      FTPGdcDownloaderFactory.get(FTPParameters("host", 21, "directory", Credentials("user"),
+          proxyEnabled = true, proxyHost = Option("proxyHost")))
+      )
   }
 
-  it should "work with client parameters" in {
-    noException should be thrownBy(FTPGdcDownloaderFactory.get(parameters ++ clientParameters))
-    (FTPGdcDownloaderFactory.get(parameters ++ clientParameters))
-      .asInstanceOf[FTPGdcDownloader].usesProxy() should be(true)
+  it should "work with proxy parameters" in {
+    var parameters = FTPParameters("host", 21, "directory", Credentials("user"),
+      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"))
+    noException should be thrownBy(FTPGdcDownloaderFactory.get(parameters))
+    FTPGdcDownloaderFactory.get(parameters).asInstanceOf[FTPGdcDownloader].usesProxy() should
+      be(true)
+
+    parameters = FTPParameters("host", 21, "directory", Credentials("user"),
+      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
+      proxyPassword = Option(""))
+    noException should be thrownBy(FTPGdcDownloaderFactory.get(parameters))
+    FTPGdcDownloaderFactory.get(parameters).asInstanceOf[FTPGdcDownloader].usesProxy() should
+      be(true)
+
+    parameters = FTPParameters("host", 21, "directory", Credentials("user"),
+      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
+      proxyPassword = Option("password"))
+    noException should be thrownBy(FTPGdcDownloaderFactory.get(parameters))
+    FTPGdcDownloaderFactory.get(parameters).asInstanceOf[FTPGdcDownloader].usesProxy() should
+      be(true)
+
+    parameters = FTPParameters("host", 21, "directory", Credentials("user"),
+      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
+      proxyPassword = Option("password"))
+    noException should be thrownBy(FTPGdcDownloaderFactory.get(parameters))
+    FTPGdcDownloaderFactory.get(parameters).asInstanceOf[FTPGdcDownloader].usesProxy() should
+      be(true)
   }
 }

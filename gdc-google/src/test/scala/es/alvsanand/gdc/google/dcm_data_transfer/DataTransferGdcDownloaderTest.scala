@@ -38,9 +38,8 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
 
   private def createDownloaderList(files: List[String],
                                    types: Seq[DataTransferFileType] = Seq.empty):
-  DataTransferGdcDownloader = {
-    val downloader: DataTransferGdcDownloader = new DataTransferGdcDownloader("log4j_test.xml",
-      "bucket", types);
+                                    DataTransferGdcDownloader = {
+    val downloader = new DataTransferGdcDownloader(DataTransferParameters("FOO", "FOO", types))
 
     val mockBuilder: Storage = Mockito.mock(classOf[Storage])
 
@@ -63,8 +62,8 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
                 val objects = new com.google.api.services.storage.model.Objects
 
                 objects.setItems(files.map(f => {
-                  val so = new StorageObject();
-                  so.setName(f);
+                  val so = new StorageObject()
+                  so.setName(f)
                   so
                 }))
               }
@@ -84,8 +83,7 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
   }
 
   private def createDownloaderFile(file: String): DataTransferGdcDownloader = {
-    val downloader: DataTransferGdcDownloader = new DataTransferGdcDownloader("log4j_test.xml",
-      "bucket");
+    val downloader = new DataTransferGdcDownloader(DataTransferParameters("FOO", "FOO"))
 
     val mockBuilder: Storage = Mockito.mock(classOf[Storage])
 
@@ -133,10 +131,14 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
   }
 
   it should "fail with empty parameters" in {
-    a[IllegalArgumentException] shouldBe thrownBy(new DataTransferGdcDownloader("FOO", null))
-    a[IllegalArgumentException] shouldBe thrownBy(new DataTransferGdcDownloader("FOO", ""))
-    a[IllegalArgumentException] shouldBe thrownBy(new DataTransferGdcDownloader(null, "FOO"))
-    a[IllegalArgumentException] shouldBe thrownBy(new DataTransferGdcDownloader("", "FOO"))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new DataTransferGdcDownloader(DataTransferParameters("FOO", null)))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new DataTransferGdcDownloader(DataTransferParameters("FOO", "")))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new DataTransferGdcDownloader(DataTransferParameters(null, "FOO")))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new DataTransferGdcDownloader(DataTransferParameters("", "FOO")))
   }
 
   it should "work with empty list" in {

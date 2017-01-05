@@ -19,17 +19,44 @@ package es.alvsanand.gdc.core.downloader
 
 import java.io.OutputStream
 
+import com.wix.accord._
 import es.alvsanand.gdc.core.util.Logging
+
+
+trait GdcDownloaderParameters
+
+object GdcDownloaderParameters {
+  private case class GdcDownloaderParametersImpl() extends GdcDownloaderParameters
+
+  def apply(): GdcDownloaderParameters = new GdcDownloaderParametersImpl
+}
 
 /**
   * Created by alvsanand on 3/10/16.
   */
-trait GdcDownloader[A <: GdcFile] extends Logging {
+abstract class GdcDownloader[A <: GdcFile, B <: GdcDownloaderParameters]
+(protected val parameters: B) extends Logging {
+
+  checkParameters()
+
   def list(): Seq[A]
 
   def download(file: A, out: OutputStream): Unit
+
+  protected def getValidator(): Validator[B]
+
+  private def checkParameters(): Unit = {
+    implicit val personValidator = getValidator()
+
+    val result: com.wix.accord.Result = validate(parameters)
+
+    if (result.isFailure) {
+      throw new IllegalArgumentException(result.toString)
+    }
+  }
 }
 
-trait GdcDownloaderFactory[A <: GdcFile] extends Serializable {
-  def get(gdcDownloaderParams: Map[String, String]): GdcDownloader[A]
+
+trait GdcDownloaderFactory[A <: GdcFile, B <: GdcDownloaderParameters] extends Serializable {
+  def get(gdcDownloaderParameters: B): GdcDownloader[A, B]
 }

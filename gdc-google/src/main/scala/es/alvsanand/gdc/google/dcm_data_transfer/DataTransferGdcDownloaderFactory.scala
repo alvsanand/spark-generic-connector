@@ -23,13 +23,11 @@ import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory}
   * Created by alvsanand on 10/12/16.
   */
 
-object DataTransferGdcDownloaderFactory extends GdcDownloaderFactory[DataTransferFile] {
-  def get(gdcDownloaderParams: Map[String, String]): GdcDownloader[DataTransferFile] = {
-    val types = gdcDownloaderParams.get("types").getOrElse("")
-      .split(",").flatMap(DataTransferFileTypes.getType(_))
+object DataTransferGdcDownloaderFactory
+    extends GdcDownloaderFactory[DataTransferFile, DataTransferParameters] {
 
-    new DataTransferGdcDownloader(
-      gdcDownloaderParams.get("credentialsPath").getOrElse(""),
-      gdcDownloaderParams.get("bucket").getOrElse(""), types)
+  def get(parameters: DataTransferParameters):
+      GdcDownloader[DataTransferFile, DataTransferParameters] = {
+    new DataTransferGdcDownloader(parameters)
   }
 }

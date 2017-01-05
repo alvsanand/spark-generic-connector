@@ -17,34 +17,26 @@
 
 package es.alvsanand.gdc.ftp.secure
 
+import es.alvsanand.gdc.ftp.Credentials
 import org.scalatest._
 
 class FTPSGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionValues
   with Inside with  Inspectors with BeforeAndAfterAll {
 
-  private val parameters = Map[String, String](
-    "host" -> "host",
-    "port" -> "1",
-    "user" -> "user",
-    "password" -> "password",
-    "directory" -> "directory"
-  )
-  private val clientParameters = Map(
-    "defaultTimeout" -> "100",
-    "dataTimeout" -> "100"
-  )
-
   it should "fail with obligatory parameters" in {
-
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(parameters - "host"))
+      .get(FTPSParameters(null, 21, null, null)))
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(parameters - "user"))
+      .get(FTPSParameters("host", 21, null, null)))
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(parameters - "directory"))
+      .get(FTPSParameters("host", 21, "directory", null)))
+    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
+      .get(FTPSParameters("host", 21, "directory", Credentials(null))))
   }
 
   it should "work with obligatory parameters" in {
-    noException should be thrownBy(FTPSGdcDownloaderFactory.get(parameters))
+    noException should be thrownBy(
+      FTPSGdcDownloaderFactory.get(FTPSParameters("host", 21, "directory", Credentials("user")))
+      )
   }
 }
