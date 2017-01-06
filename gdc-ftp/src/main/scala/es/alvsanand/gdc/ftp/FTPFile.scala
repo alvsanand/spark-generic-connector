@@ -25,4 +25,3 @@ import es.alvsanand.gdc.core.downloader.GdcFile
   * Created by alvsanand on 10/12/16.
   */
 case class FTPFile(file: String, date: Option[Date] = None) extends GdcFile
-

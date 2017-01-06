@@ -17,6 +17,7 @@
 
 package es.alvsanand.gdc.ftp.secure
 
+import es.alvsanand.gdc.ftp.Credentials
 import org.apache.commons.io.FileUtils
 import org.apache.ftpserver.listener.ListenerFactory
 import org.apache.ftpserver.ssl.SslConfigurationFactory
@@ -37,7 +38,9 @@ class FTPSGdcDownloaderClientAuthTest extends FlatSpec with Matchers with Option
   private var server: FtpServer = null
 
   private val TEST_JKS_FILE = "/servers/config/ftpserver.jks"
+  private val TEST_EMPTY_JKS_FILE = "/servers/config/empty.jks"
   private val TEST_JKS_PASSWORD = "password"
+  private val TEST_JKS_TYPE = "JKS"
   private val TEST_CONFIG_FILE = "/servers/config/org.apache.ftpserver_users.properties"
   private val TEST_HOME_DIR = "/servers/files"
   private val TEST_SAMPLES_DIR = "samples"
@@ -82,58 +85,37 @@ class FTPSGdcDownloaderClientAuthTest extends FlatSpec with Matchers with Option
     server.stop()
   }
 
-//  it should "work with test user and empty/not existing directory" in {
-//    val downloader = new FTPSGdcDownloader(HOST, PORT,
-//      UserPasswordAndPrivateKeyCredentials(TEST_USER, TEST_PASSWORD,
-//        getClass.getResource(TEST_JKS_FILE).getFile, TEST_JKS_PASSWORD), TEST_EMPTY_DIR)
-//
-//    downloader.list().map(_.file) should be(List[String]())
-//  }
-//
-//  it should "work with anonymous user and existing directory" in {
-//    val downloader = new FTPSGdcDownloader(HOST, PORT,
-//      UserPasswordAndPrivateKeyCredentials(ANON_USER, ANON_PASSWORD,
-//        getClass.getResource(TEST_JKS_FILE).getFile, TEST_JKS_PASSWORD), TEST_SAMPLES_DIR)
-//
-//    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
-//  }
-//
-//  it should "work with test user and existing directory" in {
-//    val downloader = new FTPSGdcDownloader(HOST, PORT,
-//      UserPasswordAndPrivateKeyCredentials(TEST_USER, TEST_PASSWORD,
-//        getClass.getResource(TEST_JKS_FILE).getFile, TEST_JKS_PASSWORD), TEST_SAMPLES_DIR)
-//
-//    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
-//  }
-//
-//
-//  it should "work with existing file" in {
-//    val downloader = new FTPSGdcDownloader(HOST, PORT,
-//      UserPasswordAndPrivateKeyCredentials(ANON_USER, ANON_PASSWORD,
-//        getClass.getResource(TEST_JKS_FILE).getFile, TEST_JKS_PASSWORD), TEST_SAMPLES_DIR)
-//
-//    val fileName = s"sampleFile.txt"
-//    val file = s"$TEST_HOME_DIR/$TEST_SAMPLES_DIR/$fileName"
-//
-//    val data = Files.readAllBytes(Paths.get(getClass.getResource(file).getFile))
-//
-//    val out: ByteArrayOutputStream = new ByteArrayOutputStream
-//
-//    downloader.download(FTPFile(fileName), out)
-//
-//    out.toByteArray should be(data)
-//  }
-//
-//  it should "fail with bad file" in {
-//    val downloader = new FTPSGdcDownloader(HOST, PORT,
-//      UserPasswordAndPrivateKeyCredentials(ANON_USER, ANON_PASSWORD,
-//        getClass.getResource(TEST_JKS_FILE).getFile, TEST_JKS_PASSWORD), TEST_SAMPLES_DIR)
-//
-//    val fileName = s"badSampleFile.txt"
-//    val out: ByteArrayOutputStream = new ByteArrayOutputStream
-//
-//    intercept[Throwable] {
-//      downloader.download(FTPFile(fileName), out)
-//    }
-//  }
+  it should "work with client auth" in {
+    val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
+      Credentials(TEST_USER, Option(TEST_PASSWORD)),
+      kconfig = Option(KeystoreConfig(getClass.getResource(TEST_JKS_FILE).getFile,
+        keystorePassword = Option(TEST_JKS_PASSWORD))),
+      tconfig = Option(KeystoreConfig(getClass.getResource(TEST_JKS_FILE).getFile,
+        keystorePassword = Option(TEST_JKS_PASSWORD))))
+    val downloader = new FTPSGdcDownloader(parameters)
+
+    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+  }
+
+  it should "fail because empty keystore" in {
+    val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
+      Credentials(TEST_USER, Option(TEST_PASSWORD)),
+      kconfig = Option(KeystoreConfig(getClass.getResource(TEST_EMPTY_JKS_FILE).getFile,
+        keystorePassword = Option(TEST_JKS_PASSWORD))),
+      tconfig = Option(KeystoreConfig(getClass.getResource(TEST_JKS_FILE).getFile,
+        keystorePassword = Option(TEST_JKS_PASSWORD))))
+    val downloader = new FTPSGdcDownloader(parameters)
+
+    a[javax.net.ssl.SSLHandshakeException] shouldBe thrownBy(downloader.list().map(_.file))
+  }
+
+  it should "fail because need keystore" in {
+    val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
+      Credentials(TEST_USER, Option(TEST_PASSWORD)),
+      tconfig = Option(KeystoreConfig(getClass.getResource(TEST_JKS_FILE).getFile,
+        keystorePassword = Option(TEST_JKS_PASSWORD))))
+    val downloader = new FTPSGdcDownloader(parameters)
+
+    a[javax.net.ssl.SSLHandshakeException] shouldBe thrownBy(downloader.list().map(_.file))
+  }
 }

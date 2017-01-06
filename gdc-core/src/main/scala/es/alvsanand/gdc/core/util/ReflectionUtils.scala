@@ -29,13 +29,25 @@ object ReflectionUtils {
   }
 
   implicit def reflector(ref: AnyRef): ReflectableObject = new ReflectableObject {
-    def getV(name: String): Any =
-      ref.getClass.getDeclaredMethods.find(_.getName == name).get.invoke(ref)
+    def getV(name: String): Any = {
+      val field = ref.getClass.getDeclaredFields.find(_.getName.endsWith(s"$name"))
+
+      if(field.isDefined) {
+        field.get.setAccessible(true)
+        field.get.get(ref)
+      }
+      else {
+        None
+      }
+    }
 
     def setV(name: String, value: Any): Unit = {
-      val method = ref.getClass.getDeclaredMethods.find(_.getName == name + "_$eq").get
-      method.setAccessible(true)
-      method.invoke(ref, value.asInstanceOf[AnyRef])
+      val field = ref.getClass.getDeclaredFields.find(_.getName.endsWith(s"$name"))
+
+      if(field.isDefined) {
+        field.get.setAccessible(true)
+        field.get.set(ref, value.asInstanceOf[AnyRef])
+      }
     }
   }
 }

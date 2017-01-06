@@ -19,7 +19,6 @@ package es.alvsanand.gdc.ftp.normal
 
 import java.io.ByteArrayOutputStream
 import java.nio.file.{Files, Paths}
-import java.text.SimpleDateFormat
 
 import es.alvsanand.gdc.ftp.{Credentials, FTPFile}
 import org.apache.ftpserver.listener.ListenerFactory

@@ -23,7 +23,7 @@ import com.wix.accord._
 import es.alvsanand.gdc.core.util.Logging
 
 
-trait GdcDownloaderParameters
+trait GdcDownloaderParameters extends Serializable
 
 object GdcDownloaderParameters {
   private case class GdcDownloaderParametersImpl() extends GdcDownloaderParameters

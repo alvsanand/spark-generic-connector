@@ -29,14 +29,24 @@ class FTPSGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionVal
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
       .get(FTPSParameters("host", 21, null, null)))
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(FTPSParameters("host", 21, "directory", null)))
+      .get(FTPSParameters("host", 21, "dir", null)))
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(FTPSParameters("host", 21, "directory", Credentials(null))))
+      .get(FTPSParameters("host", 21, "dir", Credentials(null))))
+    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
+      .get(FTPSParameters("host", 21, "dir", Credentials(null), Option(KeystoreConfig(null)))))
+    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
+      .get(FTPSParameters("host", 21, "dir", Credentials(null), Option(KeystoreConfig(null)),
+        Option(KeystoreConfig(null)))))
   }
 
   it should "work with obligatory parameters" in {
     noException should be thrownBy(
-      FTPSGdcDownloaderFactory.get(FTPSParameters("host", 21, "directory", Credentials("user")))
+      FTPSGdcDownloaderFactory.get(FTPSParameters("host", 21, "dir", Credentials("user"),
+        Option(KeystoreConfig("kstore"))))
+      )
+    noException should be thrownBy(
+      FTPSGdcDownloaderFactory.get(FTPSParameters("host", 21, "dir", Credentials("user"),
+        Option(KeystoreConfig("kstore")), Option(KeystoreConfig("tstore"))))
       )
   }
 }

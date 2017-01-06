@@ -77,7 +77,7 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
       }
     }).when(mockBuilder).objects()
 
-    downloader.setV("_builder", mockBuilder)
+    downloader.setV("client", mockBuilder)
 
     downloader
   }
@@ -125,7 +125,7 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
       }
     }).when(mockBuilder).objects()
 
-    downloader.setV("_builder", mockBuilder)
+    downloader.setV("client", mockBuilder)
 
     downloader
   }

@@ -35,7 +35,7 @@ import scala.util.{Failure, Success, Try}
   *
   * @param host The host of the FTP server
   * @param port The port of the FTP server. Default: 21.
-  * @param cred The used to log in the FTP server
+  * @param cred The credentials used for logging into the FTP server
   * @param directory The directory path where the downloader will find files
   * @param defaultTimeout the default timeout to use (in ms). Default: 120 seconds.
   * @param dataTimeout The timeout used of the data connection (in ms). Default: 1200 seconds.
@@ -74,7 +74,7 @@ class FTPGdcDownloader(parameters: FTPParameters)
     }
   }
 
-  private val client: FTPClient = initClient()
+  private lazy val client: FTPClient = initClient()
 
   private def initClient(): FTPClient = synchronized {
     var client: FTPClient = null

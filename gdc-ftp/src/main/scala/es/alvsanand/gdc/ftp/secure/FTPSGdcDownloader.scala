@@ -19,7 +19,7 @@ package es.alvsanand.gdc.ftp.secure
 
 import java.io._
 import java.security.KeyStore
-import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.{KeyManagerFactory, TrustManagerFactory}
 
 import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderException, GdcDownloaderParameters}
 import es.alvsanand.gdc.core.util.IOUtils
@@ -35,14 +35,17 @@ import scala.util.{Failure, Success, Try}
   *
   * @param host The host of the FTP server
   * @param port The port of the FTP server. Default: 990.
-  * @param cred The used to log in the FTP server
   * @param directory The directory path where the downloader will find files
+  * @param cred The credentials used for logging into the FTP server
+  * @param kconfig The keystore used to log in the FTP server
+  * @param tconfig The truststore used to log in the FTP server
   * @param defaultTimeout the default timeout to use (in ms). Default: 120 seconds.
   * @param dataTimeout The timeout used of the data connection (in ms). Default: 1200 seconds.
   */
 case class FTPSParameters(host: String, port: Int = 990, directory: String,
-                          cred: Credentials, defaultTimeout: Int = 120000,
-                          dataTimeout: Int = 1200000)
+                          cred: Credentials, kconfig: Option[KeystoreConfig] = None,
+                          tconfig: Option[KeystoreConfig] = None,
+                          defaultTimeout: Int = 120000, dataTimeout: Int = 1200000)
   extends GdcDownloaderParameters {
 }
 
@@ -60,33 +63,57 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
       p.cred is notNull
       if(p.cred!=null) p.cred.user is notNull
       if(p.cred!=null) p.cred.user is notEmpty
+      if(p.kconfig.isDefined) p.kconfig.get.keystore is notNull
+      if(p.kconfig.isDefined) p.kconfig.get.keystore is notNull
+      if(p.kconfig.isDefined) p.kconfig.get.keystoreType is notNull
+      if(p.kconfig.isDefined) p.kconfig.get.keystoreType is notNull
+      if(p.tconfig.isDefined) p.tconfig.get.keystore is notNull
+      if(p.tconfig.isDefined) p.tconfig.get.keystore is notNull
+      if(p.tconfig.isDefined) p.tconfig.get.keystoreType is notNull
+      if(p.tconfig.isDefined) p.tconfig.get.keystoreType is notNull
       p.defaultTimeout should be > 0
       p.dataTimeout should be > 0
     }
   }
 
-  private val client: FTPClient = initClient()
+  private lazy val client: FTPClient = initClient()
 
   private def initClient(): FTPClient = synchronized {
     logInfo(s"Initiating FTPDownloader[$parameters]")
 
-    val client: FTPSClient = new FTPSClient(parameters.cred.hasKeystore())
+    val client: FTPSClient = new FTPSClient()
 
     client.enterLocalPassiveMode()
 
     client.setDefaultTimeout(parameters.defaultTimeout)
     client.setDataTimeout(parameters.dataTimeout)
 
-    if(parameters.cred.hasKeystore()){
-      val ks = KeyStore.getInstance(KeyStore.getDefaultType())
-      ks.load(IOUtils.getInputStream(parameters.cred.keystore.get),
-        parameters.cred.keystorePassword.getOrElse("").toCharArray)
+    if(parameters.kconfig.isDefined){
+      client.setNeedClientAuth(true)
 
-      val keyManagerFactory = KeyManagerFactory.getInstance("JKS")
-      keyManagerFactory.init(ks, null)
+      val kconfig = parameters.kconfig.get
+      val ks = KeyStore.getInstance(kconfig.keystoreType)
+      ks.load(IOUtils.getInputStream(kconfig.keystore),
+        kconfig.keystorePassword.getOrElse("").toCharArray)
+
+      val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
+      keyManagerFactory.init(ks, kconfig.keystorePassword.getOrElse("").toCharArray)
 
       val keyManagers = keyManagerFactory.getKeyManagers()
       client.setKeyManager(keyManagers(0))
+    }
+
+    if(parameters.tconfig.isDefined){
+      val tconfig = parameters.tconfig.get
+      val ts = KeyStore.getInstance(tconfig.keystoreType)
+      ts.load(IOUtils.getInputStream(tconfig.keystore),
+        tconfig.keystorePassword.getOrElse("").toCharArray)
+
+      val keyManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
+      keyManagerFactory.init(ts)
+
+      val trustManagers = keyManagerFactory.getTrustManagers()
+      client.setTrustManager(trustManagers(0))
     }
 
     logInfo(s"Initiated FTPDownloader[$parameters]")

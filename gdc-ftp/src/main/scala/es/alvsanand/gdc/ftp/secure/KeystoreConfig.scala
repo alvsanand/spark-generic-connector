@@ -15,13 +15,11 @@
  * limitations under the License.
 */
 
-package es.alvsanand.gdc.ftp
+package es.alvsanand.gdc.ftp.secure
 
 import java.security.KeyStore
 
-/**
-  * Created by alvsanand on 3/01/17.
-  */
-case class Credentials(user: String, password: Option[String] = None) {
-  override def toString: String = s"Credentials($user, ***)"
+case class KeystoreConfig(keystore: String, keystorePassword: Option[String] = None,
+                          keystoreType: String = KeyStore.getDefaultType()) {
+  override def toString: String = s"KeystoreManager($keystore, ***, $keystoreType)"
 }

@@ -40,6 +40,7 @@ class FTPSGdcDownloaderTest extends FlatSpec with Matchers with OptionValues wit
   private var server: FtpServer = null
 
   private val TEST_JKS_FILE = "/servers/config/ftpserver.jks"
+  private val TEST_EMPTY_JKS_FILE = "/servers/config/empty.jks"
   private val TEST_JKS_PASSWORD = "password"
   private val TEST_CONFIG_FILE = "/servers/config/org.apache.ftpserver_users.properties"
   private val TEST_HOME_DIR = "/servers/files"
@@ -87,19 +88,30 @@ class FTPSGdcDownloaderTest extends FlatSpec with Matchers with OptionValues wit
   }
 
   it should "fail with obligatory parameters" in {
-    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(FTPSParameters(null, 21, null, null)))
-    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(FTPSParameters("host", 21, null, null)))
-    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(FTPSParameters("host", 21, "directory", null)))
-    a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(FTPSParameters("host", 21, "directory", Credentials(null))))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new FTPSGdcDownloader(FTPSParameters(null, 21, null, null)))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, null, null)))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", null)))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials(null))))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials(null),
+        Option(KeystoreConfig(null)))))
+    a[IllegalArgumentException] shouldBe
+      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials(null),
+        Option(KeystoreConfig(null)), Option(KeystoreConfig(null)))))
   }
 
   it should "work with obligatory parameters" in {
     noException should be thrownBy(
-      new FTPSGdcDownloader(FTPSParameters("host", 21, "directory", Credentials("user")))
+      new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials("user"),
+        Option(KeystoreConfig("kstore"))))
+      )
+    noException should be thrownBy(
+      new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials("user"),
+        Option(KeystoreConfig("kstore")), Option(KeystoreConfig("tstore"))))
       )
   }
 
@@ -127,6 +139,25 @@ class FTPSGdcDownloaderTest extends FlatSpec with Matchers with OptionValues wit
     downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
+  it should "work with truststore" in {
+    val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
+      Credentials(TEST_USER, Option(TEST_PASSWORD)),
+      tconfig = Option(KeystoreConfig(getClass.getResource(TEST_JKS_FILE).getFile,
+        keystorePassword = Option(TEST_JKS_PASSWORD))))
+    val downloader = new FTPSGdcDownloader(parameters)
+
+    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+  }
+
+  it should "fail because truststore" in {
+    val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
+      Credentials(TEST_USER, Option(TEST_PASSWORD)),
+      tconfig = Option(KeystoreConfig(getClass.getResource(TEST_EMPTY_JKS_FILE).getFile,
+        keystorePassword = Option(TEST_JKS_PASSWORD))))
+    val downloader = new FTPSGdcDownloader(parameters)
+
+    a[javax.net.ssl.SSLHandshakeException] shouldBe thrownBy(downloader.list().map(_.file))
+  }
 
   it should "work with existing file" in {
     val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,

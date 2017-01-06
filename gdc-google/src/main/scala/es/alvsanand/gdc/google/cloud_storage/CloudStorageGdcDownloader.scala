@@ -61,45 +61,49 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
 
   private val CLIENT_SECRET_FILE: String = "client_secrets.json"
 
-  private var _builder: Storage = null
-
-  private def builder(): Storage = synchronized {
-    if (_builder == null) {
-      logInfo(s"Initiating CloudStorageDownloader[$parameters]")
-
-      val dataStoreDir = new File(parameters.credentialsPath)
-
-      val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()
-      val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
-
-      logDebug("#################")
-      logDebug(sys.props.toArray.sorted.mkString("\n"))
-      logDebug("#################")
-      logDebug(s"dataStoreDir[$dataStoreDir -> canRead: ${dataStoreDir.canRead}," +
-        s" canWrite: ${dataStoreDir.canWrite}, " +
-        s"canExecute: ${dataStoreDir.canExecute}]")
-      logDebug("#################")
-
-      val dataStoreFactory = new FileDataStoreFactory(dataStoreDir)
-
-      val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-        new FileReader(new File(parameters.credentialsPath, CLIENT_SECRET_FILE)))
-
-      val flow: GoogleAuthorizationCodeFlow = new GoogleAuthorizationCodeFlow
-      .Builder(httpTransport, JSON_FACTORY, clientSecrets, StorageScopes.all())
-        .setDataStoreFactory(dataStoreFactory)
-        .build
-      val receiver: VerificationCodeReceiver = new GooglePromptReceiver
-      val credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user")
-
-      _builder = new Storage.Builder(httpTransport, JSON_FACTORY, credential)
-        .setApplicationName(APPLICATION_NAME)
-        .build()
-
-      logInfo(s"Initiated CloudStorageDownloader[$parameters]")
+  private var _client: Storage = null
+  private def client(): Storage = synchronized {
+    if (_client == null){
+      _client = initClient()
     }
 
-    _builder
+    _client
+  }
+
+  private def initClient(): Storage = {
+    logDebug(s"Initiating DoubleClickDataTransferDownloader[$parameters]")
+
+    val dataStoreDir = new File(parameters.credentialsPath)
+
+    val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()
+    val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
+
+    logDebug("#################")
+    logDebug(sys.props.toArray.sorted.mkString("\n"))
+    logDebug("#################")
+    logDebug(s"dataStoreDir[$dataStoreDir -> canRead: ${dataStoreDir.canRead}, canWrite: " +
+      s"${dataStoreDir.canWrite}, " +
+      s"canExecute: ${dataStoreDir.canExecute}]")
+    logDebug("#################")
+
+    val dataStoreFactory = new FileDataStoreFactory(dataStoreDir)
+
+    val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
+      new FileReader(new File(parameters.credentialsPath, CLIENT_SECRET_FILE)))
+
+    val flow: GoogleAuthorizationCodeFlow =
+      new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY,
+        clientSecrets, StorageScopes.all())
+        .setDataStoreFactory(dataStoreFactory).build
+    val receiver: VerificationCodeReceiver = new GooglePromptReceiver
+    val credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user")
+
+    val client: Storage = new Storage.Builder(httpTransport, JSON_FACTORY, credential)
+      .setApplicationName(APPLICATION_NAME).build()
+
+    logDebug(s"Initiated DoubleClickDataTransferDownloader[$parameters]")
+
+    client
   }
 
   def list(): Seq[CloudStorageFile] = {
@@ -108,7 +112,7 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
     Try({
       logDebug(s"Listing files of bucket[${parameters.bucket}]")
 
-      val listObjects = builder.objects().list(parameters.bucket)
+      val listObjects = client.objects().list(parameters.bucket)
 
       var objects: Objects = null
       do {
@@ -140,7 +144,7 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
     Try({
       logDebug(s"Downloading file[$file] of bucket[${parameters.bucket}]")
 
-      val getObject = builder.objects().get(parameters.bucket, file.file)
+      val getObject = client.objects().get(parameters.bucket, file.file)
 
       getObject.executeMediaAndDownloadTo(out)
 

@@ -79,7 +79,7 @@ class CloudStorageGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
       }
     }).when(mockBuilder).objects()
 
-    downloader.setV("_builder", mockBuilder)
+    downloader.setV("_client", mockBuilder)
 
     downloader
   }
@@ -127,7 +127,7 @@ class CloudStorageGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
       }
     }).when(mockBuilder).objects()
 
-    downloader.setV("_builder", mockBuilder)
+    downloader.setV("_client", mockBuilder)
 
     downloader
   }
