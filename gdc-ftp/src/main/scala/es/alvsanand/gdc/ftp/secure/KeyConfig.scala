@@ -19,7 +19,14 @@ package es.alvsanand.gdc.ftp.secure
 
 import java.security.KeyStore
 
-case class KeystoreConfig(url: String, keystorePassword: Option[String] = None,
-                          keystoreType: String = KeyStore.getDefaultType()) {
-  override def toString: String = s"KeystoreManager($url, ***, $keystoreType)"
+/**
+  *
+  * Only support pbes2 Encrypted Private Key
+  *
+  * @param privateUrl
+  * @param publicUrl
+  * @param privatePassword
+  */
+case class KeyConfig(privateUrl: String, publicUrl: String, privatePassword: Option[String] = None){
+  override def toString: String = s"KeyConfig($privateUrl,  $publicUrl, ***)"
 }

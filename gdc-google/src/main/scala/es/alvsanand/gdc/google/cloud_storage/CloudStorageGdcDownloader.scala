@@ -31,7 +31,7 @@ import com.google.api.services.storage.model.{Objects, StorageObject}
 import com.google.api.services.storage.{Storage, StorageScopes}
 import com.wix.accord.Validator
 import com.wix.accord.dsl._
-import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderParameters, GdcFile}
+import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderException, GdcDownloaderParameters, GdcFile}
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
@@ -129,13 +129,15 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
 
       logDebug(s"Listed files of bucket[${parameters.bucket}]: [${files.mkString(",")}]")
 
-      files.map(x => CloudStorageFile(x.getName, Option(new Date(x.getTimeCreated.getValue)))).toSeq
+      files.map(x => CloudStorageFile(x.getName, Option(new Date(x.getTimeCreated.getValue))))
+        .sortBy(_.file).toSeq
     })
     match {
       case Success(v) => v
       case Failure(e) => {
-        logError(s"Error listing files of bucket[${parameters.bucket}]: $files", e)
-        throw e
+        val msg = s"Error listing files of bucket[${parameters.bucket}]: $files"
+        logError(msg, e)
+        throw GdcDownloaderException(msg, e)
       }
     }
   }
@@ -153,8 +155,9 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
     match {
       case Success(v) =>
       case Failure(e) => {
-        logError(s"Error downloading file[${parameters.bucket}] of bucket[${parameters.bucket}]", e)
-        throw e
+        val msg = s"Error downloading file[${parameters.bucket}] of bucket[${parameters.bucket}]"
+        logError(msg, e)
+        throw GdcDownloaderException(msg, e)
       }
     }
   }

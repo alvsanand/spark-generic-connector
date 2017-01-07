@@ -17,6 +17,7 @@
 
 package es.alvsanand.gdc.ftp.secure
 
+import es.alvsanand.gdc.core.downloader.GdcDownloaderException
 import es.alvsanand.gdc.ftp.Credentials
 import org.apache.commons.io.FileUtils
 import org.apache.ftpserver.listener.ListenerFactory
@@ -106,7 +107,7 @@ class FTPSGdcDownloaderClientAuthTest extends FlatSpec with Matchers with Option
         keystorePassword = Option(TEST_JKS_PASSWORD))))
     val downloader = new FTPSGdcDownloader(parameters)
 
-    a[javax.net.ssl.SSLHandshakeException] shouldBe thrownBy(downloader.list().map(_.file))
+    a[GdcDownloaderException] shouldBe thrownBy(downloader.list().map(_.file))
   }
 
   it should "fail because need keystore" in {
@@ -116,6 +117,6 @@ class FTPSGdcDownloaderClientAuthTest extends FlatSpec with Matchers with Option
         keystorePassword = Option(TEST_JKS_PASSWORD))))
     val downloader = new FTPSGdcDownloader(parameters)
 
-    a[javax.net.ssl.SSLHandshakeException] shouldBe thrownBy(downloader.list().map(_.file))
+    a[GdcDownloaderException] shouldBe thrownBy(downloader.list().map(_.file))
   }
 }

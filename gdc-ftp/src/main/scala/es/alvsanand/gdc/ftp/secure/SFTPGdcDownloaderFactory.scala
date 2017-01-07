@@ -17,9 +17,15 @@
 
 package es.alvsanand.gdc.ftp.secure
 
-import java.security.KeyStore
+import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory}
+import es.alvsanand.gdc.ftp.FTPFile
 
-case class KeystoreConfig(url: String, keystorePassword: Option[String] = None,
-                          keystoreType: String = KeyStore.getDefaultType()) {
-  override def toString: String = s"KeystoreManager($url, ***, $keystoreType)"
+/**
+  * Created by alvsanand on 10/12/16.
+  */
+
+object SFTPGdcDownloaderFactory extends GdcDownloaderFactory[FTPFile, SFTPParameters] {
+  def get(parameters: SFTPParameters): GdcDownloader[FTPFile, SFTPParameters] = {
+    new SFTPGdcDownloader(parameters)
+  }
 }

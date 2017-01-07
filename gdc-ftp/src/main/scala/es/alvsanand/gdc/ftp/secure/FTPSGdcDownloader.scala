@@ -33,12 +33,12 @@ import scala.util.{Failure, Success, Try}
 /**
   * FTPSGdcDownloader parameters.
   *
-  * @param host The host of the FTP server
-  * @param port The port of the FTP server. Default: 990.
+  * @param host The host of the FTPS server
+  * @param port The port of the FTPS server. Default: 990.
   * @param directory The directory path where the downloader will find files
-  * @param cred The credentials used for logging into the FTP server
-  * @param kconfig The keystore used to log in the FTP server
-  * @param tconfig The truststore used to log in the FTP server
+  * @param cred The credentials used for logging into the FTPS server
+  * @param kconfig The keystore used to log in the FTPS server
+  * @param tconfig The truststore used to log in the FTPS server
   * @param defaultTimeout the default timeout to use (in ms). Default: 120 seconds.
   * @param dataTimeout The timeout used of the data connection (in ms). Default: 1200 seconds.
   */
@@ -63,14 +63,14 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
       p.cred is notNull
       if(p.cred!=null) p.cred.user is notNull
       if(p.cred!=null) p.cred.user is notEmpty
-      if(p.kconfig.isDefined) p.kconfig.get.keystore is notNull
-      if(p.kconfig.isDefined) p.kconfig.get.keystore is notNull
+      if(p.kconfig.isDefined) p.kconfig.get.url is notNull
+      if(p.kconfig.isDefined) p.kconfig.get.url is notEmpty
       if(p.kconfig.isDefined) p.kconfig.get.keystoreType is notNull
-      if(p.kconfig.isDefined) p.kconfig.get.keystoreType is notNull
-      if(p.tconfig.isDefined) p.tconfig.get.keystore is notNull
-      if(p.tconfig.isDefined) p.tconfig.get.keystore is notNull
+      if(p.kconfig.isDefined) p.kconfig.get.keystoreType is notEmpty
+      if(p.tconfig.isDefined) p.tconfig.get.url is notNull
+      if(p.tconfig.isDefined) p.tconfig.get.url is notEmpty
       if(p.tconfig.isDefined) p.tconfig.get.keystoreType is notNull
-      if(p.tconfig.isDefined) p.tconfig.get.keystoreType is notNull
+      if(p.tconfig.isDefined) p.tconfig.get.keystoreType is notEmpty
       p.defaultTimeout should be > 0
       p.dataTimeout should be > 0
     }
@@ -93,7 +93,7 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
 
       val kconfig = parameters.kconfig.get
       val ks = KeyStore.getInstance(kconfig.keystoreType)
-      ks.load(IOUtils.getInputStream(kconfig.keystore),
+      ks.load(IOUtils.getInputStream(kconfig.url),
         kconfig.keystorePassword.getOrElse("").toCharArray)
 
       val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
@@ -106,7 +106,7 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
     if(parameters.tconfig.isDefined){
       val tconfig = parameters.tconfig.get
       val ts = KeyStore.getInstance(tconfig.keystoreType)
-      ts.load(IOUtils.getInputStream(tconfig.keystore),
+      ts.load(IOUtils.getInputStream(tconfig.url),
         tconfig.keystorePassword.getOrElse("").toCharArray)
 
       val keyManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
@@ -125,7 +125,10 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
     if (!client.isConnected) {
       logInfo(s"Connecting FTPDownloader[$parameters]")
 
-      client.connect(parameters.host, parameters.port);
+      Try(client.connect(parameters.host, parameters.port)) match {
+        case Failure(e) => throw GdcDownloaderException(s"Error connecting to server", e)
+        case _ =>
+      }
 
       val reply = client.getReplyCode();
 
@@ -182,13 +185,14 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
 
       files.filter(_.isFile).map(x =>
         FTPFile(x.getName, Option(x.getTimestamp.getTime))
-      ).toSeq
+      ).sortBy(_.file).toSeq
     })
     match {
       case Success(v) => v
       case Failure(e) => {
-        logError(s"Error listing files of directory[${parameters.directory}]", e)
-        throw e
+        val msg = s"Error listing files of directory[${parameters.directory}]"
+        logError(msg, e)
+        throw GdcDownloaderException(msg, e)
       }
     }
   }
@@ -210,8 +214,9 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
     match {
       case Success(v) =>
       case Failure(e) => {
-        logError(s"Error downloading file[$file] of directory[${parameters.directory}]", e)
-        throw e
+        val msg = s"Error downloading file[$file] of directory[${parameters.directory}]"
+        logError(msg, e)
+        throw GdcDownloaderException(msg, e)
       }
     }
   }

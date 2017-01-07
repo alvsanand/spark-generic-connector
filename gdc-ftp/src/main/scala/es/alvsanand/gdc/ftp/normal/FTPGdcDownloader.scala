@@ -103,7 +103,10 @@ class FTPGdcDownloader(parameters: FTPParameters)
     if (!client.isConnected) {
       logInfo(s"Connecting FTPDownloader[$parameters]")
 
-      client.connect(parameters.host, parameters.port);
+      Try(client.connect(parameters.host, parameters.port)) match {
+        case Failure(e) => throw GdcDownloaderException(s"Error connecting to server", e)
+        case _ =>
+      }
 
       val reply = client.getReplyCode();
 
@@ -160,13 +163,14 @@ class FTPGdcDownloader(parameters: FTPParameters)
 
       files.filter(_.isFile).map(x =>
         FTPFile(x.getName, Option(x.getTimestamp.getTime))
-      ).toSeq
+      ).sortBy(_.file).toSeq
     })
     match {
       case Success(v) => v
       case Failure(e) => {
-        logError(s"Error listing files of directory[${parameters.directory}]", e);
-        throw e
+        val msg = s"Error listing files of directory[${parameters.directory}]"
+        logError(msg, e)
+        throw GdcDownloaderException(msg, e)
       }
     }
   }
@@ -188,8 +192,9 @@ class FTPGdcDownloader(parameters: FTPParameters)
     match {
       case Success(v) =>
       case Failure(e) => {
-        logError(s"Error downloading file[$file] of directory[${parameters.directory}]", e);
-        throw e
+        val msg = s"Error downloading file[$file] of directory[${parameters.directory}]"
+        logError(msg, e)
+        throw GdcDownloaderException(msg, e)
       }
     }
   }

@@ -67,4 +67,12 @@ object IOUtils {
   def getInputStream(url: String): InputStream = {
     new FileInputStream(url)
   }
+
+  def getBytes(url: String): Array[Byte] = {
+    val out = new ByteArrayOutputStream()
+
+    copy(getInputStream(url), out)
+
+    out.toByteArray
+  }
 }

@@ -156,7 +156,8 @@ class FTPSGdcDownloaderTest extends FlatSpec with Matchers with OptionValues wit
         keystorePassword = Option(TEST_JKS_PASSWORD))))
     val downloader = new FTPSGdcDownloader(parameters)
 
-    a[javax.net.ssl.SSLHandshakeException] shouldBe thrownBy(downloader.list().map(_.file))
+    a[es.alvsanand.gdc.core.downloader.GdcDownloaderException] shouldBe
+      thrownBy(downloader.list().map(_.file))
   }
 
   it should "work with existing file" in {
