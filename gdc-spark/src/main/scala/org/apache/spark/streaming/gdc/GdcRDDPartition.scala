@@ -40,5 +40,5 @@ class GdcRDDPartition[A <: GdcFile](
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 
-  override def toString: String = s"DownloadRDDPartition($GdcFile, $index)"
+  override def toString: String = s"GdcRDDPartition($GdcFile, $index)"
 }

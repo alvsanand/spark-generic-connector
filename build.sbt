@@ -18,10 +18,17 @@ lazy val commonSettings = Seq(
   `defaultSparkVersion_2x` := "2.1.0",
 
   libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-library" % scalaVersion.value % "compile",
+    "org.scala-lang" % "scala-library" % scalaVersion.value % "provided",
 
-    "org.scalatest" %% "scalatest" % "2.2.1" % "test",
-    "org.mockito" % "mockito-core" % "1.10.19" % "test"),
+    "org.scalatest" %% "scalatest" % "2.2.1" % "provided",
+    "org.mockito" % "mockito-core" % "1.10.19" % "provided"),
+
+  // Exlcude Sclala libraries in assembly
+  assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
+  assemblyExcludedJars in assembly := {
+    val cp = (fullClasspath in assembly).value
+    cp filter {_.data.getName.matches("scalatest.*")}
+  },
 
   publishMavenStyle := true,
 
@@ -74,12 +81,12 @@ lazy val `gdc-core` = (project in file("gdc-core")).
     name := "gdc-core",
 
     libraryDependencies ++= Seq(
-      "com.wix" %% "accord-core" % "0.6.1",
+      ("com.wix" %% "accord-core" % "0.6.1").exclude("org.scala-lang", "scala-library"),
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "compile", // Included in Spark,
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "compile", // Included in Spark
-      "log4j" % "log4j" % "1.2.16" % "compile", // Included in Spark
-      "commons-io" % "commons-io" % "2.4" % "compile" // Included in Spark
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
+      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
+      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
     )
   ).dependsOn()
 
@@ -92,12 +99,13 @@ lazy val `gdc-spark_1x` = (project in file("gdc-spark_1x")).
     `testSparkVersion_1x` := sys.props.get("spark.testVersion_1x").getOrElse(sparkVersion.value),
 
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % `testSparkVersion_1x`.value % "compile",
-      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_1x`.value % "compile",
+      "org.apache.spark" %% "spark-core" % `testSparkVersion_1x`.value % "provided",
+      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_1x`.value % "provided",
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "test",
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "test",
-      "log4j" % "log4j" % "1.2.16" % "test"
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
+      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
+      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
     ),
 
     unmanagedSourceDirectories in Compile +=
@@ -119,12 +127,13 @@ lazy val `gdc-spark_2x` = (project in file("gdc-spark_2x")).
     `testSparkVersion_2x` := sys.props.get("spark.testVersion_2x").getOrElse(sparkVersion.value),
 
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % `testSparkVersion_2x`.value % "compile",
-      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_2x`.value % "compile",
+      "org.apache.spark" %% "spark-core" % `testSparkVersion_2x`.value % "provided",
+      "org.apache.spark" %% "spark-streaming" % `testSparkVersion_2x`.value % "provided",
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "test",
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "test",
-      "log4j" % "log4j" % "1.2.16" % "test"
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
+      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
+      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
     ),
 
     unmanagedSourceDirectories in Compile +=
@@ -148,9 +157,11 @@ lazy val `gdc-google` = (project in file("gdc-google")).
       "com.google.http-client" % "google-http-client-jackson2" % "1.22.0",
       "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0",
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "test",
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "test",
-      "log4j" % "log4j" % "1.2.16" % "test")
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
+      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
+      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
+    )
   ).dependsOn(`gdc-core`)
 
 lazy val `gdc-ftp` = (project in file("gdc-ftp")).
@@ -162,11 +173,14 @@ lazy val `gdc-ftp` = (project in file("gdc-ftp")).
       "commons-net" % "commons-net" % "3.5",
       "com.jcraft" % "jsch" % "0.1.54",
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "test",
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "test",
-      "log4j" % "log4j" % "1.2.16" % "test",
       "org.apache.ftpserver" % "ftpserver-core" % "1.1.0" % "test",
-      "org.apache.sshd" % "sshd-core" % "1.3.0" % "test")
+      "org.apache.sshd" % "sshd-core" % "1.3.0" % "test",
+
+      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
+      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
+      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
+    )
   ).dependsOn(`gdc-core`)
 
 lazy val root = (project in file(".")).
