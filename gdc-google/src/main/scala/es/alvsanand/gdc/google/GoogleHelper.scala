@@ -18,26 +18,50 @@
 package es.alvsanand.gdc.google
 
 import java.io.{ByteArrayInputStream, File, OutputStream, StringReader}
+import java.nio.file.{Files, Path, Paths}
 
-import com.google.api.client.extensions.java6.auth.oauth2.{AuthorizationCodeInstalledApp,
-VerificationCodeReceiver}
-import com.google.api.client.googleapis.auth.oauth2.{GoogleAuthorizationCodeFlow,
-GoogleClientSecrets}
+import com.google.api.client.extensions.java6.auth.oauth2.{AuthorizationCodeInstalledApp, VerificationCodeReceiver}
+import com.google.api.client.googleapis.auth.oauth2.{GoogleAuthorizationCodeFlow, GoogleClientSecrets}
 import com.google.api.client.googleapis.extensions.java6.auth.oauth2.GooglePromptReceiver
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.JsonFactory
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.storage.{Storage, StorageScopes}
+import es.alvsanand.gdc.core.downloader.GdcDownloaderException
 import es.alvsanand.gdc.core.util.{IOUtils, Logging}
 
+import scala.collection.JavaConverters._
 import scala.util.{Failure, Try}
+
 
 /**
   * Created by alvsanand on 12/01/17.
   */
 object GoogleHelper extends Logging {
   val CLIENT_SECRET_FILE: String = "client_secrets.json"
+  val STOREDCREDENTIAL_FILE: String = "StoredCredential"
+
+  private val REQUIRED_CREDENTIALS_FILES: Array[String] =
+    Array(CLIENT_SECRET_FILE, STOREDCREDENTIAL_FILE).sorted
+
+  def checkCredentialsDirectory(directory: String): Unit = {
+    checkCredentialsDirectory(new File(directory))
+  }
+
+  def checkCredentialsDirectory(directory: File): Unit = {
+    val directoryPath = Paths.get(directory.getPath)
+
+    val currentFiles = Files.list(directoryPath).iterator().asScala
+      .map{ x => x.asInstanceOf[Path].toFile.getName}.toArray.sorted
+
+    if(!REQUIRED_CREDENTIALS_FILES.forall(currentFiles.contains(_))) {
+      val msg = s"Error checking Credentials files[" +
+        s"${REQUIRED_CREDENTIALS_FILES.mkString(",")}] are required"
+
+      throw GdcDownloaderException(msg)
+    }
+  }
 
   def createCredentialsZip(json: String, outputUrl: String): Try[Unit] = {
     val tmpDir = IOUtils.createTempDirectory()
@@ -79,5 +103,9 @@ object GoogleHelper extends Logging {
         IOUtils.deleteDirectory(tmpDir.getPath)
       }
     }
+  }
+
+  def main(args: Array[String]): Unit = {
+    checkCredentialsDirectory("/home/alvsanand/tmp/aaa")
   }
 }

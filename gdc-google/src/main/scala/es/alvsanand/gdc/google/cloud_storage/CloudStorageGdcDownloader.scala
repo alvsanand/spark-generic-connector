@@ -77,6 +77,8 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
     sys.addShutdownHook {IOUtils.deleteDirectory(tmpDir)}
     IOUtils.unzipToFileDirectory(parameters.credentialsZipPath, tmpDir.getPath)
 
+    GoogleHelper.checkCredentialsDirectory(tmpDir)
+
     val dataStoreDir = tmpDir
 
     val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()

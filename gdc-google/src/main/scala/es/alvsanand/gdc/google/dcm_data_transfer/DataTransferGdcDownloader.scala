@@ -86,6 +86,8 @@ class DataTransferGdcDownloader(parameters: DataTransferParameters)
     }
     IOUtils.unzipToFileDirectory(parameters.credentialsZipPath, tmpDir.getPath)
 
+    GoogleHelper.checkCredentialsDirectory(tmpDir)
+
     val dataStoreDir = tmpDir
 
     val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()
