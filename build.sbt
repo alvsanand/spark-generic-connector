@@ -37,12 +37,6 @@ lazy val commonSettings = Seq(
   // Skip tests during assembly
   test in assembly := {},
 
-  ScoverageSbtPlugin.ScoverageKeys.coverageHighlighting := {
-    if (scalaBinaryVersion.value == "2.10") false
-    else true
-  },
-  ScoverageSbtPlugin.ScoverageKeys.coverageExcludedPackages := "",
-
   // publishTo := {
   //  val nexus = "https://oss.sonatype.org/"
   //  if (version.value.endsWith("SNAPSHOT")) {
