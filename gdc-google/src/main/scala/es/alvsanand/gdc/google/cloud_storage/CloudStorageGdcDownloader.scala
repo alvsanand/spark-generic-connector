@@ -32,13 +32,15 @@ import com.google.api.services.storage.{Storage, StorageScopes}
 import com.wix.accord.Validator
 import com.wix.accord.dsl._
 import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderException, GdcDownloaderParameters, GdcFile}
+import es.alvsanand.gdc.core.util.IOUtils
+import es.alvsanand.gdc.google.GoogleHelper
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 case class CloudStorageFile(file: String, date: Option[Date] = None) extends GdcFile
 
-case class CloudStorageParameters(credentialsPath: String, bucket: String)
+case class CloudStorageParameters(credentialsZipPath: String, bucket: String)
   extends GdcDownloaderParameters
 
 /**
@@ -52,14 +54,12 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
     validator[CloudStorageParameters] { p =>
       p.bucket is notNull
       p.bucket is notEmpty
-      p.credentialsPath is notNull
-      p.credentialsPath is notEmpty
+      p.credentialsZipPath is notNull
+      p.credentialsZipPath is notEmpty
     }
   }
 
   private val APPLICATION_NAME: String = "CloudStorageDownloader"
-
-  private val CLIENT_SECRET_FILE: String = "client_secrets.json"
 
   private var _client: Storage = null
   private def client(): Storage = synchronized {
@@ -73,23 +73,19 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
   private def initClient(): Storage = {
     logDebug(s"Initiating DoubleClickDataTransferDownloader[$parameters]")
 
-    val dataStoreDir = new File(parameters.credentialsPath)
+    val tmpDir = IOUtils.createTempDirectory()
+    sys.addShutdownHook {IOUtils.deleteDirectory(tmpDir)}
+    IOUtils.unzipToFileDirectory(parameters.credentialsZipPath, tmpDir.getPath)
+
+    val dataStoreDir = tmpDir
 
     val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()
     val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
-    logDebug("#################")
-    logDebug(sys.props.toArray.sorted.mkString("\n"))
-    logDebug("#################")
-    logDebug(s"dataStoreDir[$dataStoreDir -> canRead: ${dataStoreDir.canRead}, canWrite: " +
-      s"${dataStoreDir.canWrite}, " +
-      s"canExecute: ${dataStoreDir.canExecute}]")
-    logDebug("#################")
-
     val dataStoreFactory = new FileDataStoreFactory(dataStoreDir)
 
     val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-      new FileReader(new File(parameters.credentialsPath, CLIENT_SECRET_FILE)))
+      new FileReader(new File(tmpDir, GoogleHelper.CLIENT_SECRET_FILE)))
 
     val flow: GoogleAuthorizationCodeFlow =
       new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY,

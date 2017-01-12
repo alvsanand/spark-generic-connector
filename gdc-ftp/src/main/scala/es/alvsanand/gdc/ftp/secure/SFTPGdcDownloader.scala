@@ -196,7 +196,14 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
         try {
           channel.cd(parameters.directory)
 
-          IOUtils.copy(channel.get(file.file), out)
+
+          val in = channel.get(file.file)
+
+          if (in != null) {
+            IOUtils.copy(in, out)
+
+            in.close()
+          }
         } finally {
           channel.disconnect()
         }

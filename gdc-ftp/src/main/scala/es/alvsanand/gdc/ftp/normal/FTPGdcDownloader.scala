@@ -185,7 +185,11 @@ class FTPGdcDownloader(parameters: FTPParameters)
         client.retrieveFileStream(file.file)
       })
 
-      if (in != null) IOUtils.copy(in, out)
+      if (in != null) {
+        IOUtils.copy(in, out)
+
+        in.close()
+      }
 
       logDebug(s"Downloaded file[$file] of directory[${parameters.directory}]")
     })

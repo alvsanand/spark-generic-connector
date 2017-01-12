@@ -9,7 +9,7 @@ val sparkVersion = settingKey[String]("The version of Spark")
 lazy val commonSettings = Seq(
   organization := "es.alvsanand",
   name := "gdc-main",
-  version := "0.1.0-SNAPSHOT",
+  version := "0.2.0-SNAPSHOT",
 
   scalaVersion := "2.11.7",
   crossScalaVersions := Seq("2.10.5", "2.11.8"),
@@ -83,10 +83,16 @@ lazy val `gdc-core` = (project in file("gdc-core")).
     libraryDependencies ++= Seq(
       ("com.wix" %% "accord-core" % "0.6.1").exclude("org.scala-lang", "scala-library"),
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
-      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
-      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
+      "org.slf4j" % "slf4j-api" % "1.7.16",
+      "org.slf4j" % "slf4j-log4j12" % "1.7.16",
+      "log4j" % "log4j" % "1.2.16",
+      "commons-io" % "commons-io" % "2.4",
+
+      "org.apache.hadoop" % "hadoop-common" % "2.6.0" % "provided",
+      "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % "provided",
+
+      "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % "test" classifier "tests",
+      "org.apache.hadoop" % "hadoop-common" % "2.6.0" % "test" classifier "tests"
     )
   ).dependsOn()
 
@@ -102,10 +108,10 @@ lazy val `gdc-spark_1x` = (project in file("gdc-spark_1x")).
       "org.apache.spark" %% "spark-core" % `testSparkVersion_1x`.value % "provided",
       "org.apache.spark" %% "spark-streaming" % `testSparkVersion_1x`.value % "provided",
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
-      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
-      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
+      "org.apache.hadoop" % "hadoop-common" % "2.6.0" % "provided"
+        excludeAll ExclusionRule(organization = "javax.servlet"),
+      "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % "provided"
+        excludeAll ExclusionRule(organization = "javax.servlet")
     ),
 
     unmanagedSourceDirectories in Compile +=
@@ -130,10 +136,10 @@ lazy val `gdc-spark_2x` = (project in file("gdc-spark_2x")).
       "org.apache.spark" %% "spark-core" % `testSparkVersion_2x`.value % "provided",
       "org.apache.spark" %% "spark-streaming" % `testSparkVersion_2x`.value % "provided",
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
-      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
-      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
+      "org.apache.hadoop" % "hadoop-common" % "2.6.0" % "provided"
+        excludeAll ExclusionRule(organization = "javax.servlet"),
+      "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % "provided"
+        excludeAll ExclusionRule(organization = "javax.servlet")
     ),
 
     unmanagedSourceDirectories in Compile +=
@@ -157,10 +163,10 @@ lazy val `gdc-google` = (project in file("gdc-google")).
       "com.google.http-client" % "google-http-client-jackson2" % "1.22.0",
       "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0",
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
-      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
-      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
+      "org.apache.hadoop" % "hadoop-common" % "2.6.0" % "provided"
+        excludeAll ExclusionRule(organization = "javax.servlet"),
+      "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % "provided"
+        excludeAll ExclusionRule(organization = "javax.servlet")
     )
   ).dependsOn(`gdc-core`)
 
@@ -176,10 +182,10 @@ lazy val `gdc-ftp` = (project in file("gdc-ftp")).
       "org.apache.ftpserver" % "ftpserver-core" % "1.1.0" % "test",
       "org.apache.sshd" % "sshd-core" % "1.3.0" % "test",
 
-      "org.slf4j" % "slf4j-api" % "1.7.16" % "provided", // Included in Spark,
-      "org.slf4j" % "slf4j-log4j12" % "1.7.16" % "provided", // Included in Spark
-      "log4j" % "log4j" % "1.2.16" % "provided", // Included in Spark
-      "commons-io" % "commons-io" % "2.4" % "provided" // Included in Spark
+      "org.apache.hadoop" % "hadoop-common" % "2.6.0" % "provided"
+        excludeAll ExclusionRule(organization = "javax.servlet"),
+      "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % "provided"
+        excludeAll ExclusionRule(organization = "javax.servlet")
     )
   ).dependsOn(`gdc-core`)
 
