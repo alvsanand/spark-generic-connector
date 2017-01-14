@@ -117,6 +117,7 @@ You can link against this library in your program at the following coordinates:
     artifactId: gdc-vfs_2.10
     version: 0.1.0-SNAPSHOT
     ```
+    
   * Scala 2.11
     ```
     groupId: org.apache.spark.generic-downloader-connector
