@@ -155,7 +155,7 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
         "dcm_account411205_impression_2016092603_20160926_131805_292768332.csv.gz",
         "AAA_BBB_CCC"))
 
-    downloader.list() should be(List[DataTransferFile](google.dcm_data_transfer
+    downloader.list() should be(List[DataTransferSlot](google.dcm_data_transfer
       .DataTransferFileTypes.getDataTransferFile
     ("dcm_account411205_activity_20160927_20160928_050546_293409263.csv.gz").get,
       google.dcm_data_transfer.DataTransferFileTypes
@@ -176,7 +176,7 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
         "AAA_BBB_CCC"), Seq[DataTransferFileType](DataTransferFileTypes.ACTIVITY,
       DataTransferFileTypes.IMPRESSION))
 
-    downloader.list() should be(List[DataTransferFile](google.dcm_data_transfer
+    downloader.list() should be(List[DataTransferSlot](google.dcm_data_transfer
       .DataTransferFileTypes.getDataTransferFile
     ("dcm_account411205_activity_20160927_20160928_050546_293409263.csv.gz").get,
       google.dcm_data_transfer.DataTransferFileTypes
@@ -185,7 +185,7 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
         .get))
   }
 
-  it should "work with existing file" in {
+  it should "work with existing name" in {
     val downloader = createDownloaderFile("/sample_files/sampleFile.txt")
 
     val data = Files.readAllBytes(Paths.get(getClass.getResource("/sample_files/sampleFile" +
@@ -193,18 +193,18 @@ class DataTransferGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
 
     val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
-    downloader.download(DataTransferFile("log4j_test.xml"), out)
+    downloader.download(DataTransferSlot("log4j_test.xml", null), out)
 
     out.toByteArray should be(data)
   }
 
-  it should "fail with bad file" in {
+  it should "fail with bad name" in {
     val downloader = createDownloaderFile(null)
 
     val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
     intercept[Throwable] {
-      downloader.download(DataTransferFile("log4j_test.xml"), out)
+      downloader.download(DataTransferSlot("log4j_test.xml", null), out)
     }
   }
 }

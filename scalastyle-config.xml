@@ -1,9 +1,9 @@
 <!--
   ~ Licensed to the Apache Software Foundation (ASF) under one or more
-  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ contributor license agreements.  See the NOTICE name distributed with
   ~ this work for additional information regarding copyright ownership.
-  ~ The ASF licenses this file to You under the Apache License, Version 2.0
-  ~ (the "License"); you may not use this file except in compliance with
+  ~ The ASF licenses this name to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this name except in compliance with
   ~ the License.  You may obtain a copy of the License at
   ~
   ~    http://www.apache.org/licenses/LICENSE-2.0
@@ -30,7 +30,7 @@ You can also disable only one rule, by specifying its rule id, as specified in:
   override def finalize(): Unit = ...
   // scalastyle:on no.finalize
 
-This file is divided into 3 sections:
+This name is divided into 3 sections:
  (1) rules that we enforce.
  (2) rules that we would like to enforce, but haven't cleaned up the codebase to turn on yet
      (or we need to make the scalastyle rule more configurable).
@@ -44,15 +44,15 @@ This file is divided into 3 sections:
     <!--                               rules we enforce                                   -->
     <!-- ================================================================================ -->
 
-    <check level="error" class="org.scalastyle.file.FileTabChecker" enabled="true"></check>
+    <check level="error" class="org.scalastyle.name.FileTabChecker" enabled="true"></check>
 
     <check level="error" class="org.scalastyle.scalariform.SpacesAfterPlusChecker" enabled="true"></check>
 
     <check level="error" class="org.scalastyle.scalariform.SpacesBeforePlusChecker" enabled="true"></check>
 
-    <check level="error" class="org.scalastyle.file.WhitespaceEndOfLineChecker" enabled="true"></check>
+    <check level="error" class="org.scalastyle.name.WhitespaceEndOfLineChecker" enabled="true"></check>
 
-    <check level="error" class="org.scalastyle.file.FileLineLengthChecker" enabled="true">
+    <check level="error" class="org.scalastyle.name.FileLineLengthChecker" enabled="true">
         <parameters>
             <parameter name="maxLineLength"><![CDATA[100]]></parameter>
             <parameter name="tabSize"><![CDATA[2]]></parameter>
@@ -95,7 +95,7 @@ This file is divided into 3 sections:
 
     <check level="error" class="org.scalastyle.scalariform.PublicMethodsHaveTypeChecker" enabled="true"></check>
 
-    <check level="error" class="org.scalastyle.file.NewLineAtEofChecker" enabled="true"></check>
+    <check level="error" class="org.scalastyle.name.NewLineAtEofChecker" enabled="true"></check>
 
     <check level="error" class="org.scalastyle.scalariform.NonASCIICharacterChecker" enabled="true"></check>
 
@@ -131,14 +131,14 @@ This file is divided into 3 sections:
       // scalastyle:on println]]></customMessage>
     </check>
 
-    <check customId="sparklogging" level="error" class="org.scalastyle.file.RegexChecker" enabled="true">
+    <check customId="sparklogging" level="error" class="org.scalastyle.name.RegexChecker" enabled="true">
         <parameters>
             <parameter name="regex">org.apache.spark.Logging</parameter>
         </parameters>
         <customMessage><![CDATA[Do not rely on Spark's Logging trait.]]></customMessage>
     </check>
 
-    <check customId="classforname" level="error" class="org.scalastyle.file.RegexChecker" enabled="true">
+    <check customId="classforname" level="error" class="org.scalastyle.name.RegexChecker" enabled="true">
         <parameters>
             <parameter name="regex">Class\.forName</parameter>
         </parameters>
@@ -188,7 +188,7 @@ This file is divided into 3 sections:
     </check>
 
     <!-- We want the opposite of this: NewLineAtEofChecker -->
-    <check level="error" class="org.scalastyle.file.NoNewLineAtEofChecker" enabled="false"></check>
+    <check level="error" class="org.scalastyle.name.NoNewLineAtEofChecker" enabled="false"></check>
 
     <!-- This one complains about all kinds of random things. Disable. -->
     <check level="error" class="org.scalastyle.scalariform.SimplifyBooleanExpressionChecker" enabled="false"></check>
@@ -203,7 +203,7 @@ This file is divided into 3 sections:
     <check level="error" class="org.scalastyle.scalariform.NoCloneChecker" enabled="false"></check>
 
     <!-- Doesn't seem super big deal here ... -->
-    <check level="error" class="org.scalastyle.file.FileLengthChecker" enabled="false">
+    <check level="error" class="org.scalastyle.name.FileLengthChecker" enabled="false">
         <parameters>
             <parameter name="maxFileLength">800></parameter>
         </parameters>

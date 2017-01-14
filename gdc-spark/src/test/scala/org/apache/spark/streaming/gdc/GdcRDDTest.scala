@@ -19,54 +19,54 @@ package org.apache.spark.streaming.gdc
 
 import java.util.Date
 
-import es.alvsanand.gdc.core.downloader.{GdcDownloaderParameters, GdcFile}
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderParameters, GdcSlot}
 import es.alvsanand.gdc.core.util.{GdcDownloaderFactoryHelper, SparkTest}
 
 class GdcRDDTest extends SparkTest {
   it should "return one partition" in {
-    val file = GdcFile("/files/example.txt", new Date)
+    val slot = GdcSlot("/files/example.txt")
 
-    val rdd = new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
-    (file)), GdcDownloaderParameters())
+    val rdd = new GdcRDD(sc, Array(slot), GdcDownloaderFactoryHelper.createFactory(Seq
+    (slot)), GdcDownloaderParameters())
 
-    rdd.partitions should be(Array(new GdcRDDPartition(file, 0)))
+    rdd.partitions should be(Array(new GdcRDDPartition(slot, 0)))
   }
 
   it should "return three partition" in {
-    val files = Array(
-      GdcFile("/files/example.txt", new Date),
-      GdcFile("/files/example_20161201.txt", new Date),
-      GdcFile("/files/example_20161202.txt", new Date))
+    val slots = Array(
+      GdcSlot("/files/example.txt"),
+      GdcSlot("/files/example_20161201.txt"),
+      GdcSlot("/files/example_20161202.txt"))
 
-    val rdd = new GdcRDD(sc, files, GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+    val rdd = new GdcRDD(sc, slots, GdcDownloaderFactoryHelper.createFactory(slots),
       GdcDownloaderParameters())
     val partitions = rdd.partitions
 
     partitions.size should be(3)
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(0))
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(0)
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(1))
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(1)
-    partitions(2).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(2))
-    partitions(2).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(2)
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(0))
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(0)
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(1))
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(1)
+    partitions(2).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(2))
+    partitions(2).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(2)
   }
 
   it should "test simple File" in {
-    val file = GdcFile("/files/example.txt", new Date)
+    val slot = GdcSlot("/files/example.txt")
 
-    val rdd = new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
-    (file)), GdcDownloaderParameters())
+    val rdd = new GdcRDD(sc, Array(slot), GdcDownloaderFactoryHelper.createFactory(Seq
+    (slot)), GdcDownloaderParameters())
 
     rdd.count() should be(5)
     rdd.collect() should be(Array("LINE 001", "LINE 002", "LINE 003", "LINE 004", "LINE 005"))
   }
 
   it should "test multiple Files" in {
-    val files = Array(
-      GdcFile("/files/example_20161201.txt", new Date),
-      GdcFile("/files/example_20161202.txt", new Date))
+    val slots = Array(
+      GdcSlot("/files/example_20161201.txt"),
+      GdcSlot("/files/example_20161202.txt"))
 
-    val rdd = new GdcRDD(sc, files, GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+    val rdd = new GdcRDD(sc, slots, GdcDownloaderFactoryHelper.createFactory(slots),
       GdcDownloaderParameters())
 
     rdd.count() should be(10)
@@ -79,10 +79,10 @@ class GdcRDDTest extends SparkTest {
   }
 
   it should "test simple File with enough retries" in {
-    val file = GdcFile("/files/example.txt", new Date)
+    val slot = GdcSlot("/files/example.txt")
 
-    val rdd = new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
-    (file),
+    val rdd = new GdcRDD(sc, Array(slot), GdcDownloaderFactoryHelper.createFactory(Seq
+    (slot),
       downloadBadTries = 2), GdcDownloaderParameters(), maxRetries = 2)
 
     rdd.count() should be(5)
@@ -90,29 +90,29 @@ class GdcRDDTest extends SparkTest {
   }
 
   it should "test simple File with not enough retries" in {
-    val file = GdcFile("/files/example.txt", new Date)
+    val slot = GdcSlot("/files/example.txt")
 
     intercept[org.apache.spark.SparkException] {
-      new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq(file),
+      new GdcRDD(sc, Array(slot), GdcDownloaderFactoryHelper.createFactory(Seq(slot),
         downloadBadTries =
         2), GdcDownloaderParameters(), maxRetries = 1).collect()
     }
   }
 
   it should "test bad File" in {
-    val file = GdcFile("BAD_FILE", new Date)
+    val slot = GdcSlot("BAD_FILE")
 
     intercept[org.apache.spark.SparkException] {
-      new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq(file)),
+      new GdcRDD(sc, Array(slot), GdcDownloaderFactoryHelper.createFactory(Seq(slot)),
         GdcDownloaderParameters()).collect()
     }
   }
 
   it should "test simple GZ File" in {
-    val file = GdcFile("/files/example.txt.gz", new Date)
+    val slot = GdcSlot("/files/example.txt.gz")
 
-    val rdd = new GdcRDD(sc, Array(file), GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
-    (file)), GdcDownloaderParameters())
+    val rdd = new GdcRDD(sc, Array(slot), GdcDownloaderFactoryHelper.createFactory(Seq
+    (slot)), GdcDownloaderParameters())
 
     rdd.count() should be(5)
     rdd.collect() should be(Array("LINE 001", "LINE 002", "LINE 003", "LINE 004", "LINE 005"))

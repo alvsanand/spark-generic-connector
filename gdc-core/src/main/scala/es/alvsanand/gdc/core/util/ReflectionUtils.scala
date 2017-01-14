@@ -18,17 +18,36 @@
 package es.alvsanand.gdc.core.util
 
 /**
-  * Created by alvsanand on 10/12/16.
+  * A class with contains some reflection cheats in order to ease the task of Unit testing.
   */
 object ReflectionUtils {
 
+  /**
+    * A trait that represents an object in which reflection task can be performed
+    */
   sealed trait ReflectableObject {
+    /**
+      * Get the value of an attribute.
+      * @param name The name of the attribute.
+      * @return The value of the attribute.
+      */
     def getV(name: String): Any
 
+    /**
+      * Set the value of an attribute.
+      * @param name The name of the attribute.
+      * @param value The new value of the attribute.
+      */
     def setV(name: String, value: Any): Unit
   }
 
+  /**
+    * Creates an implementation of a ReflectableObject
+    * @param ref The object in which the reflection operation are going to be performed,
+    * @return The ReflectableObject instance
+    */
   implicit def reflector(ref: AnyRef): ReflectableObject = new ReflectableObject {
+    /** @inheritdoc */
     def getV(name: String): Any = {
       val field = ref.getClass.getDeclaredFields.find(_.getName.endsWith(s"$name"))
 
@@ -41,6 +60,7 @@ object ReflectionUtils {
       }
     }
 
+    /** @inheritdoc */
     def setV(name: String, value: Any): Unit = {
       val field = ref.getClass.getDeclaredFields.find(_.getName.endsWith(s"$name"))
 

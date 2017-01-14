@@ -20,10 +20,21 @@ package es.alvsanand.gdc.core.util
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Created by alvsanand on 27/06/16.
+  * This is a helper object that ease the task of retrying functions. Basically, it retries a
+  * function n times until it executes correctly returning a Success or a Failure if it has
+  * reached the maximum number of retries.
   */
 object Retry extends Logging {
 
+  /**
+    * Retries a function n times
+    *
+    * @param n The maximum number of retries
+    * @param sleepTime The sleep time beetewn each retry
+    * @param fn The function to execute
+    * @tparam T The type of parameter that return the function
+    * @return A Success with the return values or a Failure with the lsat exception
+    */
   @annotation.tailrec
   def apply[T](n: Int, sleepTime: Int = 100)(fn: => T): Try[T] = {
     Try {

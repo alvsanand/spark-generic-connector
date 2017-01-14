@@ -31,25 +31,42 @@ import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 /**
-  * SFTPGdcDownloader parameters.
+  * The parameters for es.alvsanand.gdc.ftp.secure.SFTPGdcDownloader.
   *
-  * @param host The host of the SFTP server
+  * @param host The host of the SFTP server [Obligatory].
   * @param port The port of the SFTP server. Default: 22.
-  * @param directory The directory path where the downloader will find files
-  * @param cred The credentials used for logging into the SFTP server
-  * @param kconfig The private/public key used to log in the SFTP server
+  * @param directory The directory path where the downloader will find files [Obligatory].
+  * @param cred The credentials used for logging into the SFTP server [Obligatory].
+  * @param pconfig The private/public key used to log in the SFTP server.
   * @param timeout the default timeout to use (in ms). Default: 120 seconds.
   */
 case class SFTPParameters(host: String, port: Int = 22, directory: String,
-                          cred: Credentials, pconfig: Option[KeyConfig] = None,
+                          cred: FTPCredentials, pconfig: Option[KeyConfig] = None,
                           timeout: Int = 120000)
   extends GdcDownloaderParameters {
 }
 
+/**
+  * This is a [[https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol SFTP server]]
+  * implementation of es.alvsanand.gdc.core.downloader.GdcDownloader. It list and download all the
+  * files that are in
+  * a configured directory.
+  *
+  * Note: every file will be used as a slot.
+  *
+  * It has these features:
+  *
+  *  - The SFTP client will authenticate using the credentials.
+  *  - If the keystore is set, the SFTP client will use the private key to authenticate instead of
+  *  the password.
+  *
+  * @param parameters The parameters of the GdcDownloader
+  */
 private[secure]
 class SFTPGdcDownloader(parameters: SFTPParameters)
-  extends GdcDownloader[FTPFile, SFTPParameters](parameters) {
+  extends GdcDownloader[FTPSlot, SFTPParameters](parameters) {
 
+  /** @inheritdoc */
   override def getValidator(): Validator[SFTPParameters] = {
     validator[SFTPParameters] { p =>
       p.host is notNull
@@ -70,6 +87,10 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
 
   private lazy val client: Session = initClient()
 
+  /**
+    * Method that initialize the SFTP client.
+    * @return The SFTP client
+    */
   private def initClient(): Session = synchronized {
     logInfo(s"Initiating FTPDownloader[$parameters]")
 
@@ -101,6 +122,9 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
     client
   }
 
+  /**
+    * Connects to server
+    */
   private def connect(): Unit = {
     if (!client.isConnected) {
       logInfo(s"Connecting FTPDownloader[$parameters]")
@@ -114,6 +138,9 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
     }
   }
 
+  /**
+    * Disconnects from server
+    */
   private def disconnect(): Unit = {
     logInfo(s"Disconnecting FTPDownloader[$parameters]")
 
@@ -124,6 +151,9 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
     logInfo(s"Disconnecting FTPDownloader[$parameters]")
   }
 
+  /**
+    * Helper method to use the client
+    */
   private def useClient[T](func: () => T): T = {
     Try(connect()) match {
       case Failure(e) => throw e
@@ -140,11 +170,12 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
     }
   }
 
-  def list(): Seq[FTPFile] = {
+  /** @inheritdoc */
+  override def list(): Seq[FTPSlot] = {
     Try({
       logDebug(s"Listing files of directory[${parameters.directory}]")
 
-      val files = useClient[Seq[FTPFile]](() => {
+      val files = useClient[Seq[FTPSlot]](() => {
         val channel = client.openChannel("sftp").asInstanceOf[ChannelSftp]
         channel.connect()
 
@@ -153,18 +184,18 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
           if (files != null) {
             files.asScala.map(_.asInstanceOf[channel.LsEntry]).toArray
               .filterNot(f => f.getAttrs.isDir || f.getAttrs.isLink)
-              .map(f => FTPFile(s"${f.getFilename}", Option(new Date(f.getAttrs.getMTime * 1000L))))
-              .sortBy(_.file)
+              .map(f => FTPSlot(s"${f.getFilename}", new Date(f.getAttrs.getMTime * 1000L)))
+              .sortBy(_.name)
           }
           else {
-            Seq.empty[FTPFile]
+            Seq.empty[FTPSlot]
           }
         } catch {
           case e: Exception => {
             logWarning(s"Error listing files of directory[${parameters.directory}]: " +
               s"${e.getMessage}")
 
-            Seq.empty[FTPFile]
+            Seq.empty[FTPSlot]
           }
         } finally {
           channel.disconnect()
@@ -185,9 +216,10 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
     }
   }
 
-  def download(file: FTPFile, out: OutputStream): Unit = {
+  /** @inheritdoc */
+  override def download(file: FTPSlot, out: OutputStream): Unit = {
     Try({
-      logDebug(s"Downloading file[$file] of directory[${parameters.directory}]")
+      logDebug(s"Downloading name[$file] of directory[${parameters.directory}]")
 
       useClient[Unit](() => {
         val channel = client.openChannel("sftp").asInstanceOf[ChannelSftp]
@@ -197,7 +229,7 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
           channel.cd(parameters.directory)
 
 
-          val in = channel.get(file.file)
+          val in = channel.get(file.name)
 
           if (in != null) {
             IOUtils.copy(in, out)
@@ -209,12 +241,12 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
         }
       })
 
-      logDebug(s"Downloaded file[$file] of directory[${parameters.directory}]")
+      logDebug(s"Downloaded name[$file] of directory[${parameters.directory}]")
     })
     match {
       case Success(v) =>
       case Failure(e) => {
-        val msg = s"Error downloading file[$file] of directory[${parameters.directory}]"
+        val msg = s"Error downloading name[$file] of directory[${parameters.directory}]"
         logError(msg, e)
         throw GdcDownloaderException(msg, e)
       }

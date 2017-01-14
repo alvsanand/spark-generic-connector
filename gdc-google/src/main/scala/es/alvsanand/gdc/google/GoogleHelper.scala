@@ -36,7 +36,25 @@ import scala.util.{Failure, Try}
 
 
 /**
-  * Created by alvsanand on 12/01/17.
+  * This object eases the task of creating authenticate into
+  * [[https://cloud.google.com/storage/ Google Cloud Storage]]. The Google authentication method
+  * used by this implementation is Authorization code flow using a GooglePromptReceiver. See
+  * [[https://developers.google.com/api-client-library/java/google-api-java-client/oauth2
+  *  Authorization Code Flow]] for more info.
+  *
+  *  This is is the way to do it:
+  *
+  *  - Open a Spark Scala Shell or Scala Shell.
+  *  - Execute GoogleHelper.createCredentialsZip() passing the JSON of the OAuth 2.0 client ID and
+  *  the desired url to store the credentials.
+  *  - GoogleHelper library will print a URL that you have to visit using a Browser.
+  *  - Follow the instructions of the Google Page in order to obtain the authentication token.
+  *  - Paste the token in the Shell.
+  *  - The helper will create the zip and upload if the url is a HDFS file.
+  *
+  *  Note: it is recommended to use a HDFS path like [[hdfs://127.0.0.1/credentials.zip]] in order
+  *  to store the credentials in a distributed way. If no ever machine of the Spark cluster must
+  *  have a copy of this file.
   */
 object GoogleHelper extends Logging {
   val CLIENT_SECRET_FILE: String = "client_secrets.json"
@@ -45,10 +63,19 @@ object GoogleHelper extends Logging {
   private val REQUIRED_CREDENTIALS_FILES: Array[String] =
     Array(CLIENT_SECRET_FILE, STOREDCREDENTIAL_FILE).sorted
 
+
+  /**
+    * Check if the directory contains the valid Google credential files.
+    * @param directory The directory that contains the credentials.
+    */
   def checkCredentialsDirectory(directory: String): Unit = {
     checkCredentialsDirectory(new File(directory))
   }
 
+  /**
+    * Check if the directory contains the valid Google credential files.
+    * @param directory The directory that contains the credentials.
+    */
   def checkCredentialsDirectory(directory: File): Unit = {
     val directoryPath = Paths.get(directory.getPath)
 
@@ -63,6 +90,15 @@ object GoogleHelper extends Logging {
     }
   }
 
+  /**
+    * Create a Credentials zip used by
+    * es.alvsanand.gdc.google.cloud_storage.CloudStorageGdcDownloader and
+    * es.alvsanand.gdc.google.dcm_data_transfer.DataTransferGdcDownloader
+    * @param json The json of the OAuth 2.0 client ID
+    * @param outputUrl The url of the credentials zip. It can be a local file [/tmp/credentials.zip]
+    *                  or a HDFS url [[hdfs://127.0.0.1/credentials.zip]]
+    * @return Success if the execution is correct. Failure if note.
+    */
   def createCredentialsZip(json: String, outputUrl: String): Try[Unit] = {
     val tmpDir = IOUtils.createTempDirectory()
 

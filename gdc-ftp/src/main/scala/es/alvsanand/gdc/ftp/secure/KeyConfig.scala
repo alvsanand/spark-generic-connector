@@ -17,15 +17,14 @@
 
 package es.alvsanand.gdc.ftp.secure
 
-import java.security.KeyStore
-
 /**
+  * This class contains the SSH authentication configuration.
   *
-  * Only support pbes2 Encrypted Private Key
+  * Note: only is supported pbes2 Encrypted Private Key.
   *
-  * @param privateUrl
-  * @param publicUrl
-  * @param privatePassword
+  * @param privateUrl The url to find the Private Key.
+  * @param publicUrl The url to find the Public Key.
+  * @param privatePassword The password used in the Private Key.
   */
 case class KeyConfig(privateUrl: String, publicUrl: String, privatePassword: Option[String] = None){
   override def toString: String = s"KeyConfig($privateUrl,  $publicUrl, ***)"

@@ -18,14 +18,35 @@
 package es.alvsanand.gdc.ftp.secure
 
 import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory}
-import es.alvsanand.gdc.ftp.FTPFile
+import es.alvsanand.gdc.ftp.FTPSlot
 
 /**
-  * Created by alvsanand on 10/12/16.
+  * This Factory creates instances of es.alvsanand.gdc.core.downloader.GdcDownloader for
+  * integrating with a [[https://en.wikipedia.org/wiki/File_Transfer_Protocol FTPS server]]. It
+  * list and download all the files that are in a configured directory.
+  *
+  * Note: every file will be used as a slot.
+  *
+  * It has these features:
+  *
+  *  - The FTP client will authenticate using the credentials.
+  *
+  *  - If the keystore is set, the FTPS client set NeedClientAuth to true. That means the client must
+  *  use a a certificate to create the SSL connection and the server must validate the client
+  *  certificate.
+  *
+  *  - If truststore is set, the FTPS client will check that the server certificate
+  *  is valid using that truststore. That means that if the sever certificate is not in the
+  *  truststore the connection will fail.
   */
+object FTPSGdcDownloaderFactory extends GdcDownloaderFactory[FTPSlot, FTPSParameters] {
 
-object FTPSGdcDownloaderFactory extends GdcDownloaderFactory[FTPFile, FTPSParameters] {
-  def get(parameters: FTPSParameters): GdcDownloader[FTPFile, FTPSParameters] = {
+  /**
+    * Method that returns a new instance of a GdcDownloader
+    * @param parameters The parameters of the GdcDownloader
+    * @return A new instance of a GdcDownloader.
+    */
+  override def get(parameters: FTPSParameters): GdcDownloader[FTPSlot, FTPSParameters] = {
     new FTPSGdcDownloader(parameters)
   }
 }

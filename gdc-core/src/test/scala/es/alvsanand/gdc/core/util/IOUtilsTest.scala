@@ -99,7 +99,7 @@ class IOUtilsTest extends FlatSpec with Matchers with OptionValues
 
   it should "Check getFileType" in {
     IOUtils.getFileType("/FOO.txt") should be(IOUtils.LOCAL_FILE)
-    IOUtils.getFileType("file:///FOO.txt") should be(IOUtils.LOCAL_FILE)
+    IOUtils.getFileType("name:///FOO.txt") should be(IOUtils.LOCAL_FILE)
     IOUtils.getFileType(s"hdfs://127.0.0.1:$hfdsPort/hdfs_files/example.txt") should
       be(IOUtils.HDFS_FILE)
     a[java.io.IOException] should be thrownBy(IOUtils.getFileType("aaa:///FOO.txt"))

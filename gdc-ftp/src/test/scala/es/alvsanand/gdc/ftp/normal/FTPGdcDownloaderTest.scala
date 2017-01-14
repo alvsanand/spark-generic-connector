@@ -19,8 +19,9 @@ package es.alvsanand.gdc.ftp.normal
 
 import java.io.ByteArrayOutputStream
 import java.nio.file.{Files, Paths}
+import java.util.Date
 
-import es.alvsanand.gdc.ftp.{Credentials, FTPFile}
+import es.alvsanand.gdc.ftp.{FTPCredentials, FTPSlot}
 import org.apache.ftpserver.listener.ListenerFactory
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory
 import org.apache.ftpserver.usermanager.impl.BaseUser
@@ -78,43 +79,43 @@ class FTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues with
     a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
       .get(FTPParameters("host", 21, "directory", null)))
     a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
-      .get(FTPParameters("host", 21, "directory", Credentials(null))))
+      .get(FTPParameters("host", 21, "directory", FTPCredentials(null))))
     a[IllegalArgumentException] shouldBe thrownBy(FTPGdcDownloaderFactory
-      .get(FTPParameters("host", 21, "directory", Credentials("user"), proxyEnabled = true)))
+      .get(FTPParameters("host", 21, "directory", FTPCredentials("user"), proxyEnabled = true)))
   }
 
   it should "work with obligatory parameters" in {
     noException should be thrownBy(
-      new FTPGdcDownloader(FTPParameters("host", 21, "directory", Credentials("user")))
+      new FTPGdcDownloader(FTPParameters("host", 21, "directory", FTPCredentials("user")))
       )
     noException should be thrownBy(
-      new FTPGdcDownloader(FTPParameters("host", 21, "directory", Credentials("user"),
+      new FTPGdcDownloader(FTPParameters("host", 21, "directory", FTPCredentials("user"),
         proxyEnabled = true, proxyHost = Option("proxyHost")))
       )
   }
 
   it should "work with proxy parameters" in {
-    var parameters = FTPParameters("host", 21, "directory", Credentials("user"),
+    var parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
       proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"))
     noException should be thrownBy(new FTPGdcDownloader(parameters))
     new FTPGdcDownloader(parameters).asInstanceOf[FTPGdcDownloader].usesProxy() should
       be(true)
 
-    parameters = FTPParameters("host", 21, "directory", Credentials("user"),
+    parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
       proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
       proxyPassword = Option(""))
     noException should be thrownBy(new FTPGdcDownloader(parameters))
     new FTPGdcDownloader(parameters).asInstanceOf[FTPGdcDownloader].usesProxy() should
       be(true)
 
-    parameters = FTPParameters("host", 21, "directory", Credentials("user"),
+    parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
       proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
       proxyPassword = Option("password"))
     noException should be thrownBy(new FTPGdcDownloader(parameters))
     new FTPGdcDownloader(parameters).asInstanceOf[FTPGdcDownloader].usesProxy() should
       be(true)
 
-    parameters = FTPParameters("host", 21, "directory", Credentials("user"),
+    parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
       proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
       proxyPassword = Option("password"))
     noException should be thrownBy(new FTPGdcDownloader(parameters))
@@ -124,31 +125,31 @@ class FTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues with
 
   it should "work with test user and empty/not existing directory" in {
     val parameters = FTPParameters(HOST, PORT, TEST_EMPTY_DIR,
-                                   Credentials(TEST_USER, Option(TEST_PASSWORD)))
+                                   FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new FTPGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]())
+    downloader.list().map(_.name) should be(List[String]())
   }
 
   it should "work with anonymous user and existing directory" in {
     val parameters = FTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(ANON_USER))
+      FTPCredentials(ANON_USER))
     val downloader = new FTPGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+    downloader.list().map(_.name) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
   it should "work with test user and existing directory" in {
     val parameters = FTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)))
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new FTPGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+    downloader.list().map(_.name) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
-  it should "work with existing file" in {
+  it should "work with existing name" in {
     val parameters = FTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)))
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new FTPGdcDownloader(parameters)
 
     val fileName = s"sampleFile.txt"
@@ -158,20 +159,20 @@ class FTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues with
 
     val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
-    downloader.download(FTPFile(fileName), out)
+    downloader.download(FTPSlot(fileName, new Date), out)
 
     out.toByteArray should be(data)
   }
 
-  it should "fail with bad file" in {
+  it should "fail with bad name" in {
     val parameters = FTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)))
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new FTPGdcDownloader(parameters)
 
     val fileName = s"badSampleFile.txt"
     val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
-    noException should be thrownBy(downloader.download(FTPFile(fileName), out))
+    noException should be thrownBy(downloader.download(FTPSlot(fileName, new Date), out))
     out.size() should be(0)
   }
 }

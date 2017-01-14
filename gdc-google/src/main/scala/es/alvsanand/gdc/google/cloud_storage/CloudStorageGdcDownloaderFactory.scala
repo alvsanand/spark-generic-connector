@@ -20,14 +20,33 @@ package es.alvsanand.gdc.google.cloud_storage
 import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory}
 
 /**
-  * Created by alvsanand on 10/12/16.
+  * This Factory creates instances of es.alvsanand.gdc.core.downloader.GdcDownloader for
+  * integrating with [[https://cloud.google.com/storage/ Google Cloud Storage]]. It list and
+  * download all the files that are in a configured bucket.
+  *
+  * Note: every file will be used as a slot.
+  *
+  * It has these features:
+  *
+  *  - The CloudStorage client will authenticate using the credentials zip. See
+  *                           es.alvsanand.gdc.google.GoogleHelper to know more about the
+  *                           credentials zip file.
+  *
+  *  - The Google authentication method used by this implementation is Authorization code flow using
+  * a GooglePromptReceiver. See
+  *  [[https://developers.google.com/api-client-library/java/google-api-java-client/oauth2
+  *  Authorization Code Flow]] for more info.
   */
-
 object CloudStorageGdcDownloaderFactory
-    extends GdcDownloaderFactory[CloudStorageFile, CloudStorageParameters] {
+    extends GdcDownloaderFactory[CloudStorageSlot, CloudStorageParameters] {
 
-  def get(parameters: CloudStorageParameters):
-      GdcDownloader[CloudStorageFile, CloudStorageParameters] = {
+  /**
+    * Method that returns a new instance of a GdcDownloader
+    * @param parameters The parameters of the GdcDownloader
+    * @return A new instance of a GdcDownloader.
+    */
+  override def get(parameters: CloudStorageParameters):
+      GdcDownloader[CloudStorageSlot, CloudStorageParameters] = {
     new CloudStorageGdcDownloader(parameters)
   }
 }

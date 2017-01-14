@@ -23,11 +23,17 @@ import java.text.SimpleDateFormat
 import scala.util.Try
 
 /**
-  * Created by alvsanand on 10/12/16.
+  * This object contains all the DoubleClick Data Transfer file type. For more info see
+  * [[https://developers.google.com/doubleclick-advertisers/udt/overview]].
   */
 object DataTransferFileTypes {
 
-  def getType(t: String): Option[DataTransferFileType] = t match {
+  /**
+    * Obtain the type of DoubleClick Data Transfer file.
+    * @param file The name of the file.
+    * @return The type of DoubleClick Data Transfer file. None if the file cannot be parsed.
+    */
+  def getType(file: String): Option[DataTransferFileType] = file match {
     case "ACTIVITY" => Option(ACTIVITY)
     case "CLICK" => Option(CLICK)
     case "IMPRESSION" => Option(IMPRESSION)
@@ -57,16 +63,29 @@ object DataTransferFileTypes {
     case _ => None
   }
 
-  def getDataTransferFile(file: String): Option[DataTransferFile] =
+  /**
+    * Obtain a DataTransferSlot of DoubleClick Data Transfer file.
+    * @param file The name of the file.
+    * @return The DataTransferSlot. None if the file cannot be parsed.
+    */
+  def getDataTransferFile(file: String): Option[DataTransferSlot] =
     getTypeAndDate(file) match {
       case Some((t: DataTransferFileType, d: String)) => {
         val date = Try((new SimpleDateFormat(t.dateFormat)).parse(d)).toOption
 
-        Option(new DataTransferFile(file, date, Option(t)))
+        date match {
+          case Some(d) => Option(new DataTransferSlot(file, d, Option(t)))
+          case None => None
+        }
       }
       case _ => None
     }
 
+  /**
+    * Obtain the Data Transfer file type and the date.
+    * @param file The name of the file.
+    * @return The Data Transfer file type and the date. None if the file cannot be parsed.
+    */
   private def getTypeAndDate(file: String): Option[(DataTransferFileType, String)] =
     file match {
       case ACTIVITY.regex(d) => Option(ACTIVITY, d)
@@ -106,6 +125,12 @@ object DataTransferFileTypes {
       case _ => None
     }
 
+  /**
+    * This class represents a DoubleClick Data Transfer file type
+    * @param name The name of type
+    * @param regex The regex used to obtain the type and date
+    * @param dateFormat The regex used to parse the date
+    */
   sealed abstract class DataTransferFileType
   (val name: String,
    val regex: scala.util.matching.Regex,
@@ -230,5 +255,4 @@ object DataTransferFileTypes {
     extends DataTransferFileType("match_table_states",
       ".*dcm_account[0-9]+_match_table_states_([0-9]{8})_.*".r,
       "yyyyMMdd")
-
 }

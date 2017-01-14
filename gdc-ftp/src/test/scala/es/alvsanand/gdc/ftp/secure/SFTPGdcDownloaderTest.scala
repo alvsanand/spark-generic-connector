@@ -21,9 +21,10 @@ import java.io.{ByteArrayOutputStream, File}
 import java.nio.file.{FileSystems, Files, Paths}
 import java.security.{KeyFactory, PublicKey}
 import java.security.spec.X509EncodedKeySpec
+import java.util.Date
 
 import es.alvsanand.gdc.core.downloader.GdcDownloaderException
-import es.alvsanand.gdc.ftp.{Credentials, FTPFile}
+import es.alvsanand.gdc.ftp.{FTPCredentials, FTPSlot}
 import org.apache.sshd.common.NamedFactory
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory
 import org.apache.sshd.server.auth.password.PasswordAuthenticator
@@ -108,33 +109,33 @@ class SFTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues wit
     a[IllegalArgumentException] shouldBe
       thrownBy(new SFTPGdcDownloader(SFTPParameters("host", 22, "dir", null)))
     a[IllegalArgumentException] shouldBe
-      thrownBy(new SFTPGdcDownloader(SFTPParameters("host", 22, "dir", Credentials(null))))
+      thrownBy(new SFTPGdcDownloader(SFTPParameters("host", 22, "dir", FTPCredentials(null))))
     a[IllegalArgumentException] shouldBe
-      thrownBy(new SFTPGdcDownloader(SFTPParameters("host", 22, "dir", Credentials(null),
+      thrownBy(new SFTPGdcDownloader(SFTPParameters("host", 22, "dir", FTPCredentials(null),
         Option(KeyConfig(null, null)))))
     a[IllegalArgumentException] shouldBe
-      thrownBy(new SFTPGdcDownloader(SFTPParameters("host", 22, "dir", Credentials(null),
+      thrownBy(new SFTPGdcDownloader(SFTPParameters("host", 22, "dir", FTPCredentials(null),
         Option(KeyConfig("PKEY", null)))))
   }
 
   it should "work with obligatory parameters" in {
     noException should be thrownBy (
-      new SFTPGdcDownloader(SFTPParameters("host", 22, "dir", Credentials("user"),
+      new SFTPGdcDownloader(SFTPParameters("host", 22, "dir", FTPCredentials("user"),
         Option(KeyConfig("PKEY", "PKEY"))))
       )
   }
 
   it should "work with test user and empty/not existing directory" in {
     val parameters = SFTPParameters(HOST, PORT, TEST_EMPTY_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)))
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new SFTPGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]())
+    downloader.list().map(_.name) should be(List[String]())
   }
 
   it should "fail because invalid user" in {
     val parameters = SFTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(ANON_USER))
+      FTPCredentials(ANON_USER))
     val downloader = new SFTPGdcDownloader(parameters)
 
     a[es.alvsanand.gdc.core.downloader.GdcDownloaderException] shouldBe
@@ -143,36 +144,36 @@ class SFTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues wit
 
   it should "work with test user and existing directory" in {
     val parameters = SFTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)))
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new SFTPGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+    downloader.list().map(_.name) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
   it should "work with private key" in {
     val parameters = SFTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER),
+      FTPCredentials(TEST_USER),
       pconfig = Option(KeyConfig(getClass.getResource(TEST_PRIVATE_KEY_FILE).getFile,
         getClass.getResource(TEST_PUBLIC_KEY_FILE).getFile)))
     val downloader = new SFTPGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+    downloader.list().map(_.name) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
   it should "work with encrypted private key" in {
     val parameters = SFTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER),
+      FTPCredentials(TEST_USER),
       pconfig = Option(KeyConfig(getClass.getResource(TEST_PRIVATE_KEY_ENCRIPTED_FILE).getFile,
         getClass.getResource(TEST_PUBLIC_KEY_FILE).getFile,
         Option(TEST_PRIVATE_KEY_ENCRIPTED_FILE_PASSWORD))))
     val downloader = new SFTPGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+    downloader.list().map(_.name) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
-    it should "work with existing file" in {
+    it should "work with existing name" in {
       val parameters = SFTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-        Credentials(TEST_USER, Option(TEST_PASSWORD)))
+        FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
       val downloader = new SFTPGdcDownloader(parameters)
 
       val fileName = s"sampleFile.txt"
@@ -182,19 +183,20 @@ class SFTPGdcDownloaderTest extends FlatSpec with Matchers with OptionValues wit
 
       val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
-      downloader.download(FTPFile(fileName), out)
+      downloader.download(FTPSlot(fileName, new Date), out)
 
       out.toByteArray should be(data)
     }
 
-    it should "fail with bad file" in {
+    it should "fail with bad name" in {
       val parameters = SFTPParameters(HOST, PORT, TEST_SAMPLES_DIR,
-        Credentials(TEST_USER, Option(TEST_PASSWORD)))
+        FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
       val downloader = new SFTPGdcDownloader(parameters)
 
       val fileName = s"badSampleFile.txt"
       val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
-      a[GdcDownloaderException] should be thrownBy(downloader.download(FTPFile(fileName), out))
+      a[GdcDownloaderException] should be thrownBy(downloader.download(FTPSlot(fileName, new Date),
+        out))
     }
 }

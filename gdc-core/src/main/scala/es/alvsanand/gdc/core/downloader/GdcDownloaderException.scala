@@ -18,12 +18,24 @@
 package es.alvsanand.gdc.core.downloader
 
 /**
-  * Created by alvsanand on 20/10/16.
+  * Generic exception of the GDC library. It always related by a abnormal situation in the
+  * es.alvsanand.gdc.core.downloader.GdcDownloader
+  * @param message The message of the exception.
+  * @param cause The cause of the exception if exists.
   */
 class GdcDownloaderException private(message: String = null, cause: Throwable = null)
   extends Exception(message, cause)
 
+/**
+  * Simple the task creating new GdcDownloaderException
+  */
 object GdcDownloaderException {
+  /**
+    * Creates a GdcDownloaderException
+    * @param message The message of the exception.
+    * @param cause The cause of the exception if exists.
+    * @return A new GdcDownloaderException instance
+    */
   def apply(message: String = null, cause: Throwable = null): GdcDownloaderException = {
     new GdcDownloaderException(message, cause)
   }

@@ -19,7 +19,7 @@ package org.apache.spark.streaming.gdc
 
 import java.io.File
 
-import es.alvsanand.gdc.core.downloader.{GdcDownloaderParameters, GdcFile}
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderParameters, GdcSlot}
 import es.alvsanand.gdc.core.util
 import es.alvsanand.gdc.core.util.{GdcDownloaderFactoryHelper, IOUtils, SparkTest}
 import org.apache.commons.io.FileUtils
@@ -48,11 +48,11 @@ class GdcInputDStreamTest extends SparkTest {
     })
   }
 
-  it should "process files" in {
+  it should "process slots" in {
     FileUtils.deleteQuietly(new File(checkPointDirectory.getPath))
 
-    val files = Seq(GdcFile("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
+    val slots = Seq(GdcSlot("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
     val date = dt.parse("2016-01-01 00:00:00")
 
     var data: ListBuffer[String] = ListBuffer();
@@ -60,7 +60,7 @@ class GdcInputDStreamTest extends SparkTest {
     val ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files)
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(slots)
         , GdcDownloaderParameters(), Option
       (GdcRange(date)))
 
@@ -93,11 +93,11 @@ class GdcInputDStreamTest extends SparkTest {
         "20161202"))
   }
 
-  it should "process files with list failures" in {
+  it should "process slots with list failures" in {
     FileUtils.deleteQuietly(new File(checkPointDirectory.getPath))
 
-    val files = Seq(GdcFile("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
+    val slots = Seq(GdcSlot("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
     val date = dt.parse("2016-01-01 00:00:00")
 
     var data: ListBuffer[String] = ListBuffer();
@@ -105,7 +105,7 @@ class GdcInputDStreamTest extends SparkTest {
     val ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(slots,
         listBadTries = 1), GdcDownloaderParameters(), Option(GdcRange(date)))
 
       ds.checkpoint(checkpointTime)
@@ -137,11 +137,11 @@ class GdcInputDStreamTest extends SparkTest {
         "20161202"))
   }
 
-  it should "process files with list failures but not enough retries" in {
+  it should "process slots with list failures but not enough retries" in {
     FileUtils.deleteQuietly(new File(checkPointDirectory.getPath))
 
-    val files = Seq(GdcFile("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
+    val slots = Seq(GdcSlot("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
     val date = dt.parse("2016-01-01 00:00:00")
 
     var data: ListBuffer[String] = ListBuffer();
@@ -149,7 +149,7 @@ class GdcInputDStreamTest extends SparkTest {
     val ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(slots,
         listBadTries = 100),
         GdcDownloaderParameters(), Option(GdcRange(date)), maxRetries = 1)
 
@@ -181,11 +181,11 @@ class GdcInputDStreamTest extends SparkTest {
     data.size should be(0)
   }
 
-  it should "process files with download failures" in {
+  it should "process slots with download failures" in {
     FileUtils.deleteQuietly(new File(checkPointDirectory.getPath))
 
-    val files = Seq(GdcFile("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
+    val slots = Seq(GdcSlot("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
     val date = dt.parse("2016-01-01 00:00:00")
 
     var data: ListBuffer[String] = ListBuffer();
@@ -193,7 +193,7 @@ class GdcInputDStreamTest extends SparkTest {
     val ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(slots,
         downloadBadTries = 1),
         GdcDownloaderParameters(), Option(GdcRange(date)), maxRetries = 2)
 
@@ -226,11 +226,11 @@ class GdcInputDStreamTest extends SparkTest {
         "20161202"))
   }
 
-  it should "process files with download failures but not enough retries" in {
+  it should "process slots with download failures but not enough retries" in {
     FileUtils.deleteQuietly(new File(checkPointDirectory.getPath))
 
-    val files = Seq(GdcFile("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
+    val slots = Seq(GdcSlot("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
     val date = dt.parse("2016-01-01 00:00:00")
 
     var data: ListBuffer[String] = ListBuffer();
@@ -238,7 +238,7 @@ class GdcInputDStreamTest extends SparkTest {
     val ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(slots,
         downloadBadTries =
         100), GdcDownloaderParameters(), Option(GdcRange(date)), maxRetries = 2)
 
@@ -272,8 +272,8 @@ class GdcInputDStreamTest extends SparkTest {
   it should "process some batches" in {
     FileUtils.deleteQuietly(new File(checkPointDirectory.getPath))
 
-    val files = Seq(GdcFile("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
+    val slots = Seq(GdcSlot("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
     val date = dt.parse("2016-12-01 00:00:00")
 
     var data: ListBuffer[String] = ListBuffer();
@@ -281,7 +281,7 @@ class GdcInputDStreamTest extends SparkTest {
     val ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(slots,
         splitInside = false),
         GdcDownloaderParameters(), Option(GdcRange(date)))
 
@@ -324,8 +324,8 @@ class GdcInputDStreamTest extends SparkTest {
     var ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
-      (GdcFile
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(Seq
+      (GdcSlot
       ("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")))), GdcDownloaderParameters(), Option(GdcRange
       (date)))
 
@@ -354,10 +354,10 @@ class GdcInputDStreamTest extends SparkTest {
     ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(Seq
-      (GdcFile
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(Seq
+      (GdcSlot
       ("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
-        GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))), GdcDownloaderParameters(), Option
+        GdcSlot("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))), GdcDownloaderParameters(), Option
       (GdcRange(date)))
 
       ds.checkpoint(checkpointTime)
@@ -386,11 +386,11 @@ class GdcInputDStreamTest extends SparkTest {
       "20161201", "LINE 005 - 20161201"))
   }
 
-  it should "process files with same dates" in {
+  it should "process slots with same dates" in {
     FileUtils.deleteQuietly(new File(checkPointDirectory.getPath))
 
-    val files = Seq(GdcFile("/files/example_20161201_1.txt", dt.parse("2016-12-01 00:00:00")),
-      GdcFile("/files/example_20161201_2.txt", dt.parse("2016-12-01 00:00:00")))
+    val slots = Seq(GdcSlot("/files/example_20161201_1.txt", dt.parse("2016-12-01 00:00:00")),
+      GdcSlot("/files/example_20161201_2.txt", dt.parse("2016-12-01 00:00:00")))
     val date = dt.parse("2016-01-01 00:00:00")
 
     var data: ListBuffer[String] = ListBuffer();
@@ -398,7 +398,7 @@ class GdcInputDStreamTest extends SparkTest {
     val ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files)
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(slots)
         , GdcDownloaderParameters(), Option
       (GdcRange(date)))
 
@@ -431,11 +431,11 @@ class GdcInputDStreamTest extends SparkTest {
         " 20161201_2"))
   }
 
-  it should "process only one file because DateDownloadStreamFileRange" in {
+  it should "process only one name because GdcDateRange" in {
     FileUtils.deleteQuietly(new File(checkPointDirectory.getPath))
 
-    val files = Seq(GdcFile("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
+    val slots = Seq(GdcSlot("/files/example_20161201.txt", dt.parse("2016-12-01 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-12-02 00:00:00")))
     val date = dt.parse("2016-12-02 00:00:00")
 
     var data: ListBuffer[String] = ListBuffer();
@@ -443,7 +443,7 @@ class GdcInputDStreamTest extends SparkTest {
     val ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files)
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(slots)
         , GdcDownloaderParameters(), Option
       (GdcRange(date)))
 
@@ -473,21 +473,21 @@ class GdcInputDStreamTest extends SparkTest {
       "20161202", "LINE 005 - 20161202"))
   }
 
-  it should "process only one file because DateFilesDownloadStreamFileRange" in {
+  it should "process only one name because GdcDateSlotsRange" in {
     FileUtils.deleteQuietly(new File(checkPointDirectory.getPath))
 
-    val files = Seq(GdcFile("/files/sampleFile_20161011.txt", dt.parse("2016-10-11 00:00:00")),
-      GdcFile("/files/example_20161201_2.txt", dt.parse("2016-12-01 00:00:00")),
-      GdcFile("/files/example_20161201_1.txt", dt.parse("2016-12-01 00:00:00")))
+    val slots = Seq(GdcSlot("/files/sampleFile_20161011.txt", dt.parse("2016-10-11 00:00:00")),
+      GdcSlot("/files/example_20161201_2.txt", dt.parse("2016-12-01 00:00:00")),
+      GdcSlot("/files/example_20161201_1.txt", dt.parse("2016-12-01 00:00:00")))
     val date = dt.parse("2016-12-01 00:00:00")
     var data: ListBuffer[String] = ListBuffer();
 
     val ssc = StreamingContext.getOrCreate(checkPointDirectory.getPath, () => {
       val ssc = new StreamingContext(sc, batchTime)
 
-      val ds = ssc.createDownloadStream(GdcDownloaderFactoryHelper.createDownloaderFactory(files,
+      val ds = ssc.createGdcInputDStream(GdcDownloaderFactoryHelper.createDateFactory(slots,
         splitInside = true),
-        GdcDownloaderParameters(), Option(GdcRange(date, "/files/example_20161201_1.txt")))
+        GdcDownloaderParameters(), Option(GdcRange(date, Seq("/files/example_20161201_1.txt"))))
 
       ds.checkpoint(checkpointTime)
 

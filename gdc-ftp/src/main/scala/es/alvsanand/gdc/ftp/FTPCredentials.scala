@@ -17,11 +17,11 @@
 
 package es.alvsanand.gdc.ftp
 
-import java.util.Date
-
-import es.alvsanand.gdc.core.downloader.GdcFile
-
 /**
-  * Created by alvsanand on 10/12/16.
+  * This class represent the user credentials used to log into a FTP server like.
+  * @param user The username.
+  * @param password The password.
   */
-case class FTPFile(file: String, date: Option[Date] = None) extends GdcFile
+case class FTPCredentials(user: String, password: Option[String] = None) {
+  override def toString: String = s"FTPCredentials($user, ***)"
+}

@@ -31,25 +31,57 @@ import com.google.api.services.storage.model.{Objects, StorageObject}
 import com.google.api.services.storage.{Storage, StorageScopes}
 import com.wix.accord.Validator
 import com.wix.accord.dsl._
-import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderException, GdcDownloaderParameters, GdcFile}
+import es.alvsanand.gdc.core.downloader._
 import es.alvsanand.gdc.core.util.IOUtils
 import es.alvsanand.gdc.google.GoogleHelper
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
-case class CloudStorageFile(file: String, date: Option[Date] = None) extends GdcFile
+/**
+  * The es.alvsanand.gdc.core.downloader.GdcSlot implementation for
+  * es.alvsanand.gdc.google.cloud_storage.CloudStorageGdcDownloader.
+  *
+  * Note: every CloudStorageSlot corresponds to a file in Google Cloud Storage
+  * @param name The name of the file
+  * @param date The creation date of the file
+  */
+case class CloudStorageSlot(name: String, date: Date) extends GdcDateSlot
 
+/**
+  * The parameters for es.alvsanand.gdc.google.cloud_storage.CloudStorageGdcDownloader.
+  * @param credentialsZipPath The path to the credentials zip file [Obligatory]. See
+  *                           es.alvsanand.gdc.google.GoogleHelper to know more about the
+  *                           credentials zip file.
+  * @param bucket The bucket path where the downloader will find files [Obligatory].
+  */
 case class CloudStorageParameters(credentialsZipPath: String, bucket: String)
   extends GdcDownloaderParameters
 
 /**
-  * Created by alvsanand on 30/09/16.
+  * This is a [[https://cloud.google.com/storage/ Google Cloud Storage]] implementation of
+  * es.alvsanand.gdc.core.downloader.GdcDownloader. It list and download all the files that are in
+  * a configured bucket.
+  *
+  * Note: every file will be used as a slot.
+  *
+  * It has these features:
+  *
+  *  - The CloudStorage client will authenticate using the credentials zip. See
+  *                           es.alvsanand.gdc.google.GoogleHelper to know more about the
+  *                           credentials zip file.
+  *
+  *  - The Google authentication method used by this implementation is Authorization code flow using
+  * a GooglePromptReceiver. See
+  *  [[https://developers.google.com/api-client-library/java/google-api-java-client/oauth2
+  *  Authorization Code Flow]] for more info.
+  * @param parameters The parameters of the GdcDownloader
   */
 private[cloud_storage]
 class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
-  extends GdcDownloader[CloudStorageFile, CloudStorageParameters](parameters) {
+  extends GdcDownloader[CloudStorageSlot, CloudStorageParameters](parameters) {
 
+  /** @inheritdoc */
   override def getValidator(): Validator[CloudStorageParameters] = {
     validator[CloudStorageParameters] { p =>
       p.bucket is notNull
@@ -70,6 +102,10 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
     _client
   }
 
+  /**
+    * Method that initialize the Google Cloud Storage client.
+    * @return The  Google Cloud Storage client.
+    */
   private def initClient(): Storage = {
     logDebug(s"Initiating DoubleClickDataTransferDownloader[$parameters]")
 
@@ -104,7 +140,8 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
     client
   }
 
-  def list(): Seq[CloudStorageFile] = {
+  /** @inheritdoc */
+  override def list(): Seq[CloudStorageSlot] = {
     var files: Array[StorageObject] = Array.empty
 
     Try({
@@ -127,8 +164,8 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
 
       logDebug(s"Listed files of bucket[${parameters.bucket}]: [${files.mkString(",")}]")
 
-      files.map(x => CloudStorageFile(x.getName, Option(new Date(x.getTimeCreated.getValue))))
-        .sortBy(_.file).toSeq
+      files.map(x => CloudStorageSlot(x.getName, new Date(x.getTimeCreated.getValue)))
+        .sortBy(_.name).toSeq
     })
     match {
       case Success(v) => v
@@ -140,20 +177,21 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
     }
   }
 
-  def download(file: CloudStorageFile, out: OutputStream): Unit = {
+  /** @inheritdoc */
+  override def download(file: CloudStorageSlot, out: OutputStream): Unit = {
     Try({
-      logDebug(s"Downloading file[$file] of bucket[${parameters.bucket}]")
+      logDebug(s"Downloading name[$file] of bucket[${parameters.bucket}]")
 
-      val getObject = client.objects().get(parameters.bucket, file.file)
+      val getObject = client.objects().get(parameters.bucket, file.name)
 
       getObject.executeMediaAndDownloadTo(out)
 
-      logDebug(s"Downloaded file[${parameters.bucket}] of bucket[${parameters.bucket}]")
+      logDebug(s"Downloaded name[${parameters.bucket}] of bucket[${parameters.bucket}]")
     })
     match {
       case Success(v) =>
       case Failure(e) => {
-        val msg = s"Error downloading file[${parameters.bucket}] of bucket[${parameters.bucket}]"
+        val msg = s"Error downloading name[${parameters.bucket}] of bucket[${parameters.bucket}]"
         logError(msg, e)
         throw GdcDownloaderException(msg, e)
       }

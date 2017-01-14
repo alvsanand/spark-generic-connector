@@ -17,11 +17,17 @@
 
 package es.alvsanand.gdc.ftp
 
-import java.security.KeyStore
+import java.util.Date
+
+import es.alvsanand.gdc.core.downloader.GdcDateSlot
 
 /**
-  * Created by alvsanand on 3/01/17.
+  * The es.alvsanand.gdc.core.downloader.GdcDateSlot implementation for
+  * FTP server like es.alvsanand.gdc.core.downloader.GdcDownloader.
+  *
+  * Note: every FTPSlot corresponds to a file in the FTP server like
+  *
+  * @param name The name of the file
+  * @param date The last modification time of the file
   */
-case class Credentials(user: String, password: Option[String] = None) {
-  override def toString: String = s"Credentials($user, ***)"
-}
+case class FTPSlot(name: String, date: Date) extends GdcDateSlot

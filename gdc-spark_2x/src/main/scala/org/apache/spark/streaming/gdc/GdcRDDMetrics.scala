@@ -23,9 +23,8 @@ import org.apache.spark.TaskContext
 import org.apache.spark.executor.DataReadMethod
 
 /**
-  * Created by alvsanand on 2/01/17.
+  * This class is the responsible of write metrics to the Spark TaskContext.
   */
-private[gdc]
 class GdcRDDMetrics(private val context: TaskContext) {
   private val counter = new AtomicLong()
 
@@ -33,12 +32,20 @@ class GdcRDDMetrics(private val context: TaskContext) {
 
   private val existingBytesRead = inputMetrics.bytesRead
 
+  /**
+    * Updated the bytes read
+    * @param numBytes The number of read bytes
+    */
   def updateBytesRead(numBytes: Long = 0): Unit = {
     counter.addAndGet(numBytes)
 
     inputMetrics.setBytesRead(existingBytesRead + counter.get().toLong)
   }
 
+  /**
+    *  Updated the number of read slots
+    * @param numRecords The number of read slots
+    */
   def updateRecordRead(numRecords: Long = 1): Unit = {
     inputMetrics.incRecordsRead(numRecords)
   }

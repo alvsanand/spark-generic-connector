@@ -18,14 +18,30 @@
 package es.alvsanand.gdc.ftp.normal
 
 import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory}
-import es.alvsanand.gdc.ftp.FTPFile
+import es.alvsanand.gdc.ftp.FTPSlot
 
 /**
-  * Created by alvsanand on 10/12/16.
+  * This Factory creates instances of es.alvsanand.gdc.core.downloader.GdcDownloader for
+  * integrating with a [[https://en.wikipedia.org/wiki/File_Transfer_Protocol FTP server]]. It
+  * list and download all the files that are in a configured directory.
+  *
+  * Note: every file will be used as a slot.
+  *
+  * It has these features:
+  *
+  *  - The FTP client will authenticate using the credentials.
+  *
+  *  - If the proxy parameters are set, the FTP client will use a proxy instead of a direct
+  * connection.
   */
+object FTPGdcDownloaderFactory extends GdcDownloaderFactory[FTPSlot, FTPParameters] {
 
-object FTPGdcDownloaderFactory extends GdcDownloaderFactory[FTPFile, FTPParameters] {
-  def get(parameters: FTPParameters): GdcDownloader[FTPFile, FTPParameters] = {
+  /**
+    * Method that returns a new instance of a GdcDownloader
+    * @param parameters The parameters of the GdcDownloader
+    * @return A new instance of a GdcDownloader.
+    */
+  override def get(parameters: FTPParameters): GdcDownloader[FTPSlot, FTPParameters] = {
     new FTPGdcDownloader(parameters)
   }
 }

@@ -17,25 +17,58 @@
 
 package org.apache.spark.streaming.gdc
 
-import es.alvsanand.gdc.core.downloader.{GdcDownloaderFactory, GdcDownloaderParameters, GdcFile}
-import org.apache.spark.annotation.DeveloperApi
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderFactory, GdcDownloaderParameters, GdcDateSlot}
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.InputDStream
 
 import scala.reflect.ClassTag
 
 /**
-  * Created by alvsanand on 22/11/16.
+  * GdcStreamContext creates a InputDStreams which is able to read slots using a
+  * es.alvsanand.gdc.core.downloader.GdcDownloader. When a new slots comes, it creates a
+  * org.apache.spark.streaming.gdc.GdcRDD. The way it works as follows.
+  *
+  * At each batch interval, the es.alvsanand.gdc.core.downloader.GdcDownloader list all its
+  * available slots and detects if there are new slots which will be for that batch. For this
+  * purpose, this class remembers the information about the slots selected in past batches for
+  * a certain duration
+  *
+  * This makes some assumptions from the other system that
+  * es.alvsanand.gdc.core.downloader.GdcDownloader is monitoring.
+  *
+  *  - The clock of the name system is assumed to synchronized with the clock of the machine running
+  *    the streaming app.
+  *  - The es.alvsanand.gdc.core.downloader.GdcDateSlot returned by the
+  *  es.alvsanand.gdc.core.downloader.GdcDownloader should return a date because if not it will
+  *  be sorted by name.
+  *  
+  * @param ssc The StreamingContext
   */
-@DeveloperApi
 case class GdcStreamContext(@transient ssc: StreamingContext) {
 
-  def createDownloadStream[A <: GdcFile: ClassTag, B <: GdcDownloaderParameters: ClassTag]
+  /**
+    * * Create a org.apache.spark.streaming.gdc.GdcInputDStream from a SparkContext using a
+    * es.alvsanand.gdc.core.downloader.GdcDownloaderFactory and some parameters.
+ *
+    * @param gdcDownloaderFactory The GdcDownloaderFactory used to create the
+    *                             es.alvsanand.gdc.core.downloader.GdcDownloader.
+    * @param parameters The parameters of the es.alvsanand.gdc.core.downloader.GdcDownloader.
+    * @param fromGdcRange The range from where the GdcInputDStream must begin.
+    * @param charset The java.nio.charset.Charset name of the slots that are going to be
+    *                downloaded.
+    * @param maxRetries  The maximum number times that an operation of a
+    *                   es.alvsanand.gdc.core.downloader.GdcDownloader is going to be repeated
+    *                   in case of failure.
+    * @tparam A The type of es.alvsanand.gdc.core.downloader.GdcDateSlot
+    * @tparam B The type of es.alvsanand.gdc.core.downloader.GdcDownloaderParameters
+    * @return A GdcInputDStream
+    */
+  def createGdcInputDStream[A <: GdcDateSlot: ClassTag, B <: GdcDownloaderParameters: ClassTag]
                                                   (gdcDownloaderFactory: GdcDownloaderFactory[A, B],
-                                                   gdcDownloaderParameters: B,
-                                                   fromGdcFileRange: Option[GdcRange] = None,
+                                                   parameters: B,
+                                                   fromGdcRange: Option[GdcRange] = None,
                                                    charset: String = "UTF-8",
                                                    maxRetries: Int = 3): InputDStream[String] =
-    new GdcInputDStream[A, B](ssc, gdcDownloaderFactory, gdcDownloaderParameters,
-      fromGdcFileRange, charset, maxRetries)
+    new GdcInputDStream[A, B](ssc, gdcDownloaderFactory, parameters,
+      fromGdcRange, charset, maxRetries)
 }

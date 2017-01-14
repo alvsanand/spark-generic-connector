@@ -31,28 +31,54 @@ import com.wix.accord.dsl.{be, _}
 import scala.util.{Failure, Success, Try}
 
 /**
-  * FTPSGdcDownloader parameters.
+  * The parameters for es.alvsanand.gdc.ftp.secure.FTPSGdcDownloader.
   *
-  * @param host The host of the FTPS server
+  * @param host The host of the FTPS server [Required].
   * @param port The port of the FTPS server. Default: 990.
-  * @param directory The directory path where the downloader will find files
-  * @param cred The credentials used for logging into the FTPS server
-  * @param kconfig The keystore used to log in the FTPS server
-  * @param tconfig The truststore used to log in the FTPS server
+  * @param directory The directory path where the downloader will find files [Required].
+  * @param cred The credentials used for logging into the FTPS server [Required].
+  * @param kconfig The keystore used to log in the FTPS server. See
+  *                [[https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html]] for
+  *                more details.
+  * @param tconfig The truststore used to log in the FTPS server. See
+  *                [[https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html]] for
+  *                more details.
   * @param defaultTimeout the default timeout to use (in ms). Default: 120 seconds.
   * @param dataTimeout The timeout used of the data connection (in ms). Default: 1200 seconds.
   */
 case class FTPSParameters(host: String, port: Int = 990, directory: String,
-                          cred: Credentials, kconfig: Option[KeystoreConfig] = None,
+                          cred: FTPCredentials, kconfig: Option[KeystoreConfig] = None,
                           tconfig: Option[KeystoreConfig] = None,
                           defaultTimeout: Int = 120000, dataTimeout: Int = 1200000)
   extends GdcDownloaderParameters {
 }
 
+/**
+  * This is [[https://en.wikipedia.org/wiki/File_Transfer_Protocol FTPS server]] implementation of
+  * es.alvsanand.gdc.core.downloader.GdcDownloader. It list and download all the files that are in
+  * a configured directory.
+  *
+  * Note: every file will be used as a slot.
+  *
+  * It has these features:
+  *
+  *  - The FTP client will authenticate using the credentials.
+  *
+  *  - If the keystore is set, the FTPS client set NeedClientAuth to true. That means the client must
+  *  use a a certificate to create the SSL connection and the server must validate the client
+  *  certificate.
+  *
+  *  - If truststore is set, the FTPS client will check that the server certificate
+  *  is valid using that truststore. That means that if the sever certificate is not in the
+  *  truststore the connection will fail.
+  *
+  * @param parameters The parameters of the GdcDownloader
+  */
 private[secure]
 class FTPSGdcDownloader(parameters: FTPSParameters)
-  extends GdcDownloader[FTPFile, FTPSParameters](parameters) {
+  extends GdcDownloader[FTPSlot, FTPSParameters](parameters) {
 
+  /** @inheritdoc */
   override def getValidator(): Validator[FTPSParameters] = {
     validator[FTPSParameters] { p =>
       p.host is notNull
@@ -78,6 +104,10 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
 
   private lazy val client: FTPClient = initClient()
 
+  /**
+    * Method that initialize the FTPS client.
+    * @return The FTPS client
+    */
   private def initClient(): FTPClient = synchronized {
     logInfo(s"Initiating FTPDownloader[$parameters]")
 
@@ -121,6 +151,9 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
     client
   }
 
+  /**
+    * Connects to server
+    */
   private def connect(): Unit = {
     if (!client.isConnected) {
       logInfo(s"Connecting FTPDownloader[$parameters]")
@@ -143,6 +176,9 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
     }
   }
 
+  /**
+    * Disconnects from server
+    */
   private def disconnect(): Unit = {
     logInfo(s"Disconnecting FTPDownloader[$parameters]")
 
@@ -153,6 +189,9 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
     logInfo(s"Disconnecting FTPDownloader[$parameters]")
   }
 
+  /**
+    * Helper method to use the client
+    */
   private def useClient[T](func: () => T): T = {
     Try(connect()) match {
       case Failure(e) => throw e
@@ -169,7 +208,8 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
     }
   }
 
-  def list(): Seq[FTPFile] = {
+  /** @inheritdoc */
+  override def list(): Seq[FTPSlot] = {
     var files: Array[org.apache.commons.net.ftp.FTPFile] = Array.empty
 
     Try({
@@ -184,8 +224,8 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
       logDebug(s"Listed files of directory[${parameters.directory}]: [${files.mkString(",")}]")
 
       files.filter(_.isFile).map(x =>
-        FTPFile(x.getName, Option(x.getTimestamp.getTime))
-      ).sortBy(_.file).toSeq
+        FTPSlot(x.getName, x.getTimestamp.getTime)
+      ).sortBy(_.name).toSeq
     })
     match {
       case Success(v) => v
@@ -197,14 +237,15 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
     }
   }
 
-  def download(file: FTPFile, out: OutputStream): Unit = {
+  /** @inheritdoc */
+  override def download(file: FTPSlot, out: OutputStream): Unit = {
     Try({
-      logDebug(s"Downloading file[$file] of directory[${parameters.directory}]")
+      logDebug(s"Downloading name[$file] of directory[${parameters.directory}]")
 
       val in = useClient[InputStream](() => {
         client.changeWorkingDirectory(parameters.directory)
 
-        client.retrieveFileStream(file.file)
+        client.retrieveFileStream(file.name)
       })
 
       if (in != null) {
@@ -213,12 +254,12 @@ class FTPSGdcDownloader(parameters: FTPSParameters)
         in.close()
       }
 
-      logDebug(s"Downloaded file[$file] of directory[${parameters.directory}]")
+      logDebug(s"Downloaded name[$file] of directory[${parameters.directory}]")
     })
     match {
       case Success(v) =>
       case Failure(e) => {
-        val msg = s"Error downloading file[$file] of directory[${parameters.directory}]"
+        val msg = s"Error downloading name[$file] of directory[${parameters.directory}]"
         logError(msg, e)
         throw GdcDownloaderException(msg, e)
       }

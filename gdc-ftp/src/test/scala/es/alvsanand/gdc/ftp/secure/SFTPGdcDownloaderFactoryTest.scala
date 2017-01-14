@@ -17,7 +17,7 @@
 
 package es.alvsanand.gdc.ftp.secure
 
-import es.alvsanand.gdc.ftp.Credentials
+import es.alvsanand.gdc.ftp.FTPCredentials
 import org.scalatest._
 
 class SFTPGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionValues
@@ -31,16 +31,16 @@ class SFTPGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionVal
     a[IllegalArgumentException] shouldBe thrownBy(SFTPGdcDownloaderFactory
       .get(SFTPParameters("host", 21, "dir", null)))
     a[IllegalArgumentException] shouldBe thrownBy(SFTPGdcDownloaderFactory
-      .get(SFTPParameters("host", 21, "dir", Credentials(null))))
+      .get(SFTPParameters("host", 21, "dir", FTPCredentials(null))))
     a[IllegalArgumentException] shouldBe thrownBy(SFTPGdcDownloaderFactory
-      .get(SFTPParameters("host", 21, "dir", Credentials(null), Option(KeyConfig(null, null)))))
+      .get(SFTPParameters("host", 21, "dir", FTPCredentials(null), Option(KeyConfig(null, null)))))
     a[IllegalArgumentException] shouldBe thrownBy(SFTPGdcDownloaderFactory
-      .get(SFTPParameters("host", 21, "dir", Credentials(null), Option(KeyConfig("PKEY", null)))))
+      .get(SFTPParameters("host", 21, "dir", FTPCredentials(null), Option(KeyConfig("PKEY", null)))))
   }
 
   it should "work with obligatory parameters" in {
     noException should be thrownBy(
-      SFTPGdcDownloaderFactory.get(SFTPParameters("host", 21, "dir", Credentials("user"),
+      SFTPGdcDownloaderFactory.get(SFTPParameters("host", 21, "dir", FTPCredentials("user"),
         Option(KeyConfig("PKEY", "PKEY"))))
       )
   }

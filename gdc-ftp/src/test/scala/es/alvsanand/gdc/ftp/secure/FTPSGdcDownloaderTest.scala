@@ -19,8 +19,9 @@ package es.alvsanand.gdc.ftp.secure
 
 import java.io.ByteArrayOutputStream
 import java.nio.file.{Files, Paths}
+import java.util.Date
 
-import es.alvsanand.gdc.ftp.{Credentials, FTPFile}
+import es.alvsanand.gdc.ftp.{FTPCredentials, FTPSlot}
 import org.apache.commons.io.FileUtils
 import org.apache.ftpserver.listener.ListenerFactory
 import org.apache.ftpserver.ssl.SslConfigurationFactory
@@ -95,74 +96,74 @@ class FTPSGdcDownloaderTest extends FlatSpec with Matchers with OptionValues wit
     a[IllegalArgumentException] shouldBe
       thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", null)))
     a[IllegalArgumentException] shouldBe
-      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials(null))))
+      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", FTPCredentials(null))))
     a[IllegalArgumentException] shouldBe
-      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials(null),
+      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", FTPCredentials(null),
         Option(KeystoreConfig(null)))))
     a[IllegalArgumentException] shouldBe
-      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials(null),
+      thrownBy(new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", FTPCredentials(null),
         Option(KeystoreConfig(null)), Option(KeystoreConfig(null)))))
   }
 
   it should "work with obligatory parameters" in {
     noException should be thrownBy(
-      new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials("user"),
+      new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", FTPCredentials("user"),
         Option(KeystoreConfig("kstore"))))
       )
     noException should be thrownBy(
-      new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", Credentials("user"),
+      new FTPSGdcDownloader(FTPSParameters("host", 21, "dir", FTPCredentials("user"),
         Option(KeystoreConfig("kstore")), Option(KeystoreConfig("tstore"))))
       )
   }
 
   it should "work with test user and empty/not existing directory" in {
     val parameters = FTPSParameters(HOST, PORT, TEST_EMPTY_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)))
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new FTPSGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]())
+    downloader.list().map(_.name) should be(List[String]())
   }
 
   it should "work with anonymous user and existing directory" in {
     val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(ANON_USER))
+      FTPCredentials(ANON_USER))
     val downloader = new FTPSGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+    downloader.list().map(_.name) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
   it should "work with test user and existing directory" in {
     val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)))
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new FTPSGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+    downloader.list().map(_.name) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
   it should "work with truststore" in {
     val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)),
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)),
       tconfig = Option(KeystoreConfig(getClass.getResource(TEST_JKS_FILE).getFile,
         keystorePassword = Option(TEST_JKS_PASSWORD))))
     val downloader = new FTPSGdcDownloader(parameters)
 
-    downloader.list().map(_.file) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
+    downloader.list().map(_.name) should be(List[String]("sampleFile.txt", "sampleFile2.txt"))
   }
 
   it should "fail because truststore" in {
     val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)),
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)),
       tconfig = Option(KeystoreConfig(getClass.getResource(TEST_EMPTY_JKS_FILE).getFile,
         keystorePassword = Option(TEST_JKS_PASSWORD))))
     val downloader = new FTPSGdcDownloader(parameters)
 
     a[es.alvsanand.gdc.core.downloader.GdcDownloaderException] shouldBe
-      thrownBy(downloader.list().map(_.file))
+      thrownBy(downloader.list().map(_.name))
   }
 
-  it should "work with existing file" in {
+  it should "work with existing name" in {
     val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)))
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new FTPSGdcDownloader(parameters)
 
     val fileName = s"sampleFile.txt"
@@ -172,20 +173,20 @@ class FTPSGdcDownloaderTest extends FlatSpec with Matchers with OptionValues wit
 
     val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
-    downloader.download(FTPFile(fileName), out)
+    downloader.download(FTPSlot(fileName, new Date), out)
 
     out.toByteArray should be(data)
   }
 
-  it should "fail with bad file" in {
+  it should "fail with bad name" in {
     val parameters = FTPSParameters(HOST, PORT, TEST_SAMPLES_DIR,
-      Credentials(TEST_USER, Option(TEST_PASSWORD)))
+      FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val downloader = new FTPSGdcDownloader(parameters)
 
     val fileName = s"badSampleFile.txt"
     val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
-    noException should be thrownBy(downloader.download(FTPFile(fileName), out))
+    noException should be thrownBy(downloader.download(FTPSlot(fileName, new Date), out))
     out.size() should be(0)
   }
 }

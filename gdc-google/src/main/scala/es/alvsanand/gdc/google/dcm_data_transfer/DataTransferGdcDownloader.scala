@@ -20,10 +20,8 @@ package es.alvsanand.gdc.google.dcm_data_transfer
 import java.io._
 import java.util.Date
 
-import com.google.api.client.extensions.java6.auth.oauth2.{AuthorizationCodeInstalledApp,
-VerificationCodeReceiver}
-import com.google.api.client.googleapis.auth.oauth2.{GoogleAuthorizationCodeFlow,
-GoogleClientSecrets}
+import com.google.api.client.extensions.java6.auth.oauth2.{AuthorizationCodeInstalledApp, VerificationCodeReceiver}
+import com.google.api.client.googleapis.auth.oauth2.{GoogleAuthorizationCodeFlow, GoogleClientSecrets}
 import com.google.api.client.googleapis.extensions.java6.auth.oauth2.GooglePromptReceiver
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.JsonFactory
@@ -33,8 +31,7 @@ import com.google.api.services.storage.model.{Objects, StorageObject}
 import com.google.api.services.storage.{Storage, StorageScopes}
 import com.wix.accord.Validator
 import com.wix.accord.dsl._
-import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderException,
-GdcDownloaderParameters, GdcFile}
+import es.alvsanand.gdc.core.downloader._
 import es.alvsanand.gdc.core.util.IOUtils
 import es.alvsanand.gdc.google.GoogleHelper
 import es.alvsanand.gdc.google.dcm_data_transfer.DataTransferFileTypes.DataTransferFileType
@@ -42,20 +39,56 @@ import es.alvsanand.gdc.google.dcm_data_transfer.DataTransferFileTypes.DataTrans
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
-case class DataTransferFile(file: String, date: Option[Date] = None,
-                            ddtFileType: Option[DataTransferFileType] = None) extends GdcFile
+/**
+  * The es.alvsanand.gdc.core.downloader.GdcSlot implementation for
+  * es.alvsanand.gdc.google.dcm_data_transfer.DataTransferGdcDownloader.
+  *
+  * Note: every CloudStorageSlot corresponds to a file in Google Cloud Storage
+  * @param name The name of the file
+  * @param date The creation date of the file
+  */
+case class DataTransferSlot(name: String, date: Date,
+                            ddtFileType: Option[DataTransferFileType] = None) extends GdcDateSlot
 
+/**
+  * The parameters for es.alvsanand.gdc.google.dcm_data_transfer.DataTransferGdcDownloader.
+  * @param credentialsZipPath The path to the credentials zip file [Obligatory]. See
+  *                           es.alvsanand.gdc.google.GoogleHelper to know more about the
+  *                           credentials zip file.
+  * @param bucket The bucket path where the downloader will find files [Obligatory].
+  * @param types The type of Data Transfer files to filter.
+  */
 case class DataTransferParameters(credentialsZipPath: String, bucket: String,
                                   types: Seq[DataTransferFileType] = Seq.empty)
   extends GdcDownloaderParameters
 
 /**
-  * Created by alvsanand on 30/09/16.
+  * This is a [[https://support.google.com/dcm/partner/answer/165589?hl=en DoubleClick Data Transfer]]
+  * implementation of es.alvsanand.gdc.core.downloader.GdcDownloader. It list and download all the
+  * files that are in a configured bucket.
+  *
+  * Note: every file will be used as a slot.
+  *
+  * It has these features:
+  *
+  *  - The CloudStorage client will authenticate using the credentials zip. See
+  *                           es.alvsanand.gdc.google.GoogleHelper to know more about the
+  *                           credentials zip file.
+  *
+  *  - The Google authentication method used by this implementation is Authorization code flow using
+  * a GooglePromptReceiver. See
+  *  [[https://developers.google.com/api-client-library/java/google-api-java-client/oauth2
+  *  Authorization Code Flow]] for more info.
+  *
+  *  - The GdcDownloader is able to filter the type of Data Transfer files.
+  *
+  * @param parameters The parameters of the GdcDownloader
   */
 private[dcm_data_transfer]
 class DataTransferGdcDownloader(parameters: DataTransferParameters)
-  extends GdcDownloader[DataTransferFile, DataTransferParameters](parameters) {
+  extends GdcDownloader[DataTransferSlot, DataTransferParameters](parameters) {
 
+  /** @inheritdoc */
   override def getValidator(): Validator[DataTransferParameters] = {
     validator[DataTransferParameters] { p =>
       p.bucket is notNull
@@ -77,6 +110,10 @@ class DataTransferGdcDownloader(parameters: DataTransferParameters)
     _client
   }
 
+  /**
+    * Method that initialize the Google Cloud Storage client.
+    * @return The  Google Cloud Storage client.
+    */
   private def initClient(): Storage = {
     logDebug(s"Initiating DoubleClickDataTransferDownloader[$parameters]")
 
@@ -113,7 +150,8 @@ class DataTransferGdcDownloader(parameters: DataTransferParameters)
     client
   }
 
-  def list(): Seq[DataTransferFile] = {
+  /** @inheritdoc */
+  override def list(): Seq[DataTransferSlot] = {
     var files: Array[StorageObject] = Array.empty
 
     Try({
@@ -139,7 +177,7 @@ class DataTransferGdcDownloader(parameters: DataTransferParameters)
       files.flatMap(x => DataTransferFileTypes.getDataTransferFile(x.getName))
         .filter(f =>
           parameters.types.isEmpty || parameters.types.contains(f.ddtFileType.getOrElse(None))
-        ).sortBy(_.file).toSeq
+        ).sortBy(_.name).toSeq
     })
     match {
       case Success(v) => v
@@ -151,20 +189,21 @@ class DataTransferGdcDownloader(parameters: DataTransferParameters)
     }
   }
 
-  def download(file: DataTransferFile, out: OutputStream): Unit = {
+  /** @inheritdoc */
+  override def download(file: DataTransferSlot, out: OutputStream): Unit = {
     Try({
-      logDebug(s"Downloading file[$file] of bucket[${parameters.bucket}]")
+      logDebug(s"Downloading name[$file] of bucket[${parameters.bucket}]")
 
-      val getObject = client.objects().get(parameters.bucket, file.file)
+      val getObject = client.objects().get(parameters.bucket, file.name)
 
       getObject.executeMediaAndDownloadTo(out)
 
-      logDebug(s"Downloaded file[${parameters.bucket}] of bucket[$parameters.ucket]")
+      logDebug(s"Downloaded name[${parameters.bucket}] of bucket[$parameters.ucket]")
     })
     match {
       case Success(v) =>
       case Failure(e) => {
-        val msg = s"Error downloading file[${parameters.bucket}] of bucket[${parameters.bucket}]"
+        val msg = s"Error downloading name[${parameters.bucket}] of bucket[${parameters.bucket}]"
         logError(msg, e)
         throw GdcDownloaderException(msg, e)
       }

@@ -28,10 +28,19 @@ import org.apache.hadoop.fs.FileSystem
 
 import scala.util.matching.Regex
 
+/**
+  * A helper class which perform several System Input/Output operations.
+  */
 object IOUtils {
 
   private val GZIP_MAGIC_LENGTH = 2
 
+  /**
+    * Detect the type of data that the InputStream contains and wraps it in order to make the data
+    * reable.
+    * @param inputStream The InputStream with the data.
+    * @return The new InputStream.
+    */
   def parseInputStream(inputStream: InputStream): InputStream = {
     try {
       inputStream.mark(GZIP_MAGIC_LENGTH);
@@ -53,15 +62,24 @@ object IOUtils {
     }
   }
 
+  /**
+    * Copy the data from InputStream to another OutputStream.
+    * @param in The source of the data.
+    * @param out The destination of the data.
+    */
   def copy(in: InputStream, out: OutputStream): Unit = {
     org.apache.commons.io.IOUtils.copy(in, out)
   }
 
+  /**
+    * Creates a temporal directory
+    * @return The temporal directory name
+    */
   def createTempDirectory(): File = {
     val temp = File.createTempFile("temp", System.nanoTime().toString)
 
     if (!(temp.delete())) {
-      throw new IOException("Could not delete temp file: " + temp.getAbsolutePath())
+      throw new IOException("Could not delete temp name: " + temp.getAbsolutePath())
     }
 
     if (!(temp.mkdir())) {
@@ -71,26 +89,52 @@ object IOUtils {
     temp
   }
 
+  /**
+    * It completely deletes a directory with its files and sub-folders
+    * @param directory The directory to delete.
+    */
   def deleteDirectory(directory: String): Unit = {
     deleteDirectory(new File(directory))
   }
 
+  /**
+    * It completely deletes a directory with its files and sub-folders.
+    * @param directory The directory to delete.
+    */
   def deleteDirectory(directory: File): Unit = {
     org.apache.commons.io.FileUtils.deleteDirectory(directory)
   }
 
+  /**
+    * A trait that represents the name type of an URL.
+    * @param regex The regular expression used to detect the name type of an URL.
+    */
   private[util]
   sealed abstract class FILE_TYPE(val regex: Regex)
 
+  /**
+    * A case class that represents a HDFS name.
+    */
   private[util]
   case object HDFS_FILE extends FILE_TYPE("^hdfs://([\\.:\\w]+)([-_/\\.\\w\\*]+)$".r)
 
+  /**
+    * A case class that represents a local name.
+    */
   private[util]
-  case object LOCAL_FILE extends FILE_TYPE("^file://([-_/\\.\\w\\*]+)$".r)
+  case object LOCAL_FILE extends FILE_TYPE("^name://([-_/\\.\\w\\*]+)$".r)
 
+  /**
+    * A case class that represents an unsupported name.
+    */
   private[util]
   case object UNSUPPORTED_FILE extends FILE_TYPE("(\\w+)://(.*)".r)
 
+  /**
+    * Obtains the type of the name represented in an URL
+    * @param url the url of the name.
+    * @return The name type.
+    */
   private[util]
   def getFileType(url: String): FILE_TYPE = {
     url match {
@@ -101,6 +145,11 @@ object IOUtils {
     }
   }
 
+  /**
+    * Return a InputStream from an URL. Currently It supports HDFS and local files.
+    * @param url The url of the name.
+    * @return The InputStream which reads the data
+    */
   def getInputStream(url: String): InputStream = {
     getFileType(url) match {
       case HDFS_FILE => {
@@ -133,6 +182,11 @@ object IOUtils {
     }
   }
 
+  /**
+    * Return a OutputStream from an URL. Currently It supports HDFS and local files.
+    * @param url The url of the name.
+    * @return The OutputStream which write the data
+    */
   def getOutputStream(url: String): OutputStream = {
     getFileType(url) match {
       case HDFS_FILE => {
@@ -169,6 +223,11 @@ object IOUtils {
     }
   }
 
+  /**
+    * Return the data from an URL. Currently It supports HDFS and local files.
+    * @param url The url of the name.
+    * @return The data bytes of the name.
+    */
   def getBytes(url: String): Array[Byte] = {
     val out = new ByteArrayOutputStream()
 
@@ -177,6 +236,11 @@ object IOUtils {
     out.toByteArray
   }
 
+  /**
+    * Unzip a name into a local Folder.
+    * @param urlZip The url of the zip.
+    * @param outputDir The destination directory.
+    */
   def unzipToFileDirectory(urlZip: String, outputDir: String): Unit = {
     var in: ZipInputStream = null
     val outputDirPath = Paths.get(outputDir)
@@ -205,6 +269,11 @@ object IOUtils {
     }
   }
 
+  /**
+    * Zip a local Folder.
+    * @param dir The local directory to be zipped
+    * @param outputZip The url of the destination zip name.
+    */
   def zip(dir: String, outputZip: String): Unit = {
     val dirPath = Paths.get(dir)
     val outputZipPath = Paths.get(outputZip)

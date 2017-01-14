@@ -18,14 +18,29 @@
 package es.alvsanand.gdc.ftp.secure
 
 import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderFactory}
-import es.alvsanand.gdc.ftp.FTPFile
+import es.alvsanand.gdc.ftp.FTPSlot
 
 /**
-  * Created by alvsanand on 10/12/16.
+  * This Factory creates instances of es.alvsanand.gdc.core.downloader.GdcDownloader for
+  * integrating with a [[https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol SFTP server]]. It
+  * list and download all the files that are in a configured directory.
+  *
+  * Note: every file will be used as a slot.
+  *
+  * It has these features:
+  *
+  *  - The SFTP client will authenticate using the credentials.
+  *  - If the keystore is set, the SFTP client will use the private key to authenticate instead of
+  *  the password.
   */
+object SFTPGdcDownloaderFactory extends GdcDownloaderFactory[FTPSlot, SFTPParameters] {
 
-object SFTPGdcDownloaderFactory extends GdcDownloaderFactory[FTPFile, SFTPParameters] {
-  def get(parameters: SFTPParameters): GdcDownloader[FTPFile, SFTPParameters] = {
+  /**
+    * Method that returns a new instance of a GdcDownloader
+    * @param parameters The parameters of the GdcDownloader
+    * @return A new instance of a GdcDownloader.
+    */
+  override def get(parameters: SFTPParameters): GdcDownloader[FTPSlot, SFTPParameters] = {
     new SFTPGdcDownloader(parameters)
   }
 }

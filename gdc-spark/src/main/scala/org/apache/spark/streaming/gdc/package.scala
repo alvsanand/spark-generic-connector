@@ -18,17 +18,27 @@
 package org.apache.spark.streaming
 
 import org.apache.spark.SparkContext
-import org.apache.spark.annotation.DeveloperApi
 
 /**
-  * Created by alvsanand on 22/11/16.
+  * This Package object ease to developers the creation of org.apache.spark.streaming.gdc.GdcRDD
+  * and org.apache.spark.streaming.gdc.GdcInputDStream.
   */
 package object gdc {
-  @DeveloperApi
+  /**
+    * Creates a org.apache.spark.streaming.gdc.GdcContext and set as a function of the
+    * org.apache.spark.SparkContext
+    * @param sc The SparkContext
+    * @return A GdcContext
+    */
   implicit def toSparkContextFunctions(sc: SparkContext): GdcContext =
     GdcContext(sc)
 
-  @DeveloperApi
+  /**
+    * Creates a org.apache.spark.streaming.gdc.GdcStreamContext and set as a function of the
+    * org.apache.spark.streaming.StreamingContext
+    * @param ssc the StreamingContext
+    * @return A GdcStreamContext
+    */
   implicit def toSparkContextFunctions(ssc: StreamingContext): GdcStreamContext =
     GdcStreamContext(ssc)
 }

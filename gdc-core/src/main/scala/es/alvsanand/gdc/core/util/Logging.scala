@@ -19,29 +19,48 @@ package es.alvsanand.gdc.core.util
 
 import org.slf4j.{Logger, LoggerFactory}
 
+/**
+  * Simple trait that logs info data easing the task to the rest of classes.
+  */
 trait Logging {
-  // Make the log field transient so that objects with Logging can
-  // be serialized and used on another machine
   @transient private var log_ : Logger = null
 
-  // Log methods that take only a String
+  /**
+    * Log a message with INFO level.
+    * @param msg The message
+    */
   protected def logInfo(msg: => String) {
     if (log.isInfoEnabled) log.info(msg)
   }
 
+  /**
+    * Log a message with DEBUG level.
+    * @param msg The message
+    */
   protected def logDebug(msg: => String) {
     if (log.isDebugEnabled) log.debug(msg)
   }
 
+  /**
+    * Log a message with TRACE level.
+    * @param msg The message
+    */
   protected def logTrace(msg: => String) {
     if (log.isTraceEnabled) log.trace(msg)
   }
 
+  /**
+    * Log a message with WARNING level.
+    * @param msg The message
+    */
   protected def logWarning(msg: => String) {
     if (log.isWarnEnabled) log.warn(msg)
   }
 
-  // Method to get or create the logger for this object
+  /**
+    * Internal method which creates an Logger based on the name of the class.
+    * @return The Logger asociated to the class.
+    */
   private def log: Logger = {
     if (log_ == null) {
       log_ = LoggerFactory.getLogger(logName)
@@ -49,38 +68,65 @@ trait Logging {
     log_
   }
 
-  // Method to get the logger name for this object
+  /**
+    * Internal method which obtains the name of the class.
+    * @return The name of the class
+    */
   private def logName = {
     // Ignore trailing $'s in the class names for Scala objects
     this.getClass.getName.stripSuffix("$")
   }
 
+  /**
+    * Log a message with ERROR level.
+    * @param msg The message
+    */
   protected def logError(msg: => String) {
     if (log.isErrorEnabled) log.error(msg)
   }
 
-  // Log methods that take Throwables (Exceptions/Errors) too
+  /**
+    * Log a message with INFO level.
+    * @param msg The message
+    * @param throwable The Throwable
+    */
   protected def logInfo(msg: => String, throwable: Throwable) {
     if (log.isInfoEnabled) log.info(msg, throwable)
   }
 
+  /**
+    * Log a message with DEBUG level.
+    * @param msg The message
+    * @param throwable The Throwable
+    */
   protected def logDebug(msg: => String, throwable: Throwable) {
     if (log.isDebugEnabled) log.debug(msg, throwable)
   }
 
+  /**
+    * Log a message with TRACE level.
+    * @param msg The message
+    * @param throwable The Throwable
+    */
   protected def logTrace(msg: => String, throwable: Throwable) {
     if (log.isTraceEnabled) log.trace(msg, throwable)
   }
 
+  /**
+    * Log a message with WARNING level.
+    * @param msg The message
+    * @param throwable The Throwable
+    */
   protected def logWarning(msg: => String, throwable: Throwable) {
     if (log.isWarnEnabled) log.warn(msg, throwable)
   }
 
+  /**
+    * Log a message with ERROR level.
+    * @param msg The message
+    * @param throwable The Throwable
+    */
   protected def logError(msg: => String, throwable: Throwable) {
     if (log.isErrorEnabled) log.error(msg, throwable)
-  }
-
-  protected def isTraceEnabled(): Boolean = {
-    log.isTraceEnabled
   }
 }

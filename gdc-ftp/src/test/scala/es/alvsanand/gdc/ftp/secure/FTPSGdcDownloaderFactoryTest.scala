@@ -17,7 +17,7 @@
 
 package es.alvsanand.gdc.ftp.secure
 
-import es.alvsanand.gdc.ftp.Credentials
+import es.alvsanand.gdc.ftp.FTPCredentials
 import org.scalatest._
 
 class FTPSGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionValues
@@ -31,21 +31,21 @@ class FTPSGdcDownloaderFactoryTest extends FlatSpec with Matchers with OptionVal
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
       .get(FTPSParameters("host", 21, "dir", null)))
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(FTPSParameters("host", 21, "dir", Credentials(null))))
+      .get(FTPSParameters("host", 21, "dir", FTPCredentials(null))))
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(FTPSParameters("host", 21, "dir", Credentials(null), Option(KeystoreConfig(null)))))
+      .get(FTPSParameters("host", 21, "dir", FTPCredentials(null), Option(KeystoreConfig(null)))))
     a[IllegalArgumentException] shouldBe thrownBy(FTPSGdcDownloaderFactory
-      .get(FTPSParameters("host", 21, "dir", Credentials(null), Option(KeystoreConfig(null)),
+      .get(FTPSParameters("host", 21, "dir", FTPCredentials(null), Option(KeystoreConfig(null)),
         Option(KeystoreConfig(null)))))
   }
 
   it should "work with obligatory parameters" in {
     noException should be thrownBy(
-      FTPSGdcDownloaderFactory.get(FTPSParameters("host", 21, "dir", Credentials("user"),
+      FTPSGdcDownloaderFactory.get(FTPSParameters("host", 21, "dir", FTPCredentials("user"),
         Option(KeystoreConfig("kstore"))))
       )
     noException should be thrownBy(
-      FTPSGdcDownloaderFactory.get(FTPSParameters("host", 21, "dir", Credentials("user"),
+      FTPSGdcDownloaderFactory.get(FTPSParameters("host", 21, "dir", FTPCredentials("user"),
         Option(KeystoreConfig("kstore")), Option(KeystoreConfig("tstore"))))
       )
   }

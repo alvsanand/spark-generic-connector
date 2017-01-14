@@ -19,6 +19,13 @@ package es.alvsanand.gdc.ftp.secure
 
 import java.security.KeyStore
 
+/**
+  * This class represents the parameter used to create a
+  * [[https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html]].
+  * @param url The url to find the KeyStore
+  * @param keystorePassword The password used in the KeyStore.
+  * @param keystoreType The KeyStore type.
+  */
 case class KeystoreConfig(url: String, keystorePassword: Option[String] = None,
                           keystoreType: String = KeyStore.getDefaultType()) {
   override def toString: String = s"KeystoreManager($url, ***, $keystoreType)"

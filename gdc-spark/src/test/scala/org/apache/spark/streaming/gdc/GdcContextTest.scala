@@ -17,125 +17,112 @@
 
 package org.apache.spark.streaming.gdc
 
-import es.alvsanand.gdc.core.downloader.{GdcDownloaderParameters, GdcFile}
+import es.alvsanand.gdc.core.downloader.{GdcDownloaderParameters, GdcSlot}
 import es.alvsanand.gdc.core.util.{GdcDownloaderFactoryHelper, SparkTest}
 
 class GdcContextTest extends SparkTest {
 
   it should "Return all" in {
-    val files = Array(
-      GdcFile("/files/example.txt"),
-      GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
+    val slots = Array(
+      GdcSlot("/files/example.txt"),
+      GdcSlot("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+    val rdd = sc.createGdcRDD(GdcDownloaderFactoryHelper.createFactory(slots),
       GdcDownloaderParameters())
     val partitions = rdd.partitions
 
     partitions.size should be(3)
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(0))
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(0)
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(1))
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(1)
-    partitions(2).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(2))
-    partitions(2).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(2)
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(0))
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(0)
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(1))
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(1)
+    partitions(2).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(2))
+    partitions(2).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(2)
   }
 
-  it should "Return all files with date filter A" in {
-    val files = Array(
-      GdcFile("/files/example.txt"),
-      GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
+  it should "Return only first with Previous filter" in {
+    val slots = Array(
+      GdcSlot("/files/example.txt"),
+      GdcSlot("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+    val rdd = sc.createPreviousFilteredGdcRDD(GdcDownloaderFactoryHelper.createFactory(slots),
+      GdcDownloaderParameters(), Array(GdcSlot("/files/example.txt")))
+    val partitions = rdd.partitions
+
+    partitions.size should be(2)
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(1))
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(0)
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(2))
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(1)
+  }
+
+  it should "Return all slots with date filter A" in {
+    val slots = Array(
+      GdcSlot("/files/example.txt", dt.parse("2016-10-11 00:00:00")),
+      GdcSlot("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
+
+    val rdd = sc.createDateFilteredGdcRDD(GdcDownloaderFactoryHelper.createDateFactory(slots),
       GdcDownloaderParameters(), Option(dt.parse
-    ("2016-10-12 00:00:00")), Option(dt.parse("2016-10-13 00:00:01")))
+    ("2016-10-11 00:00:00")), Option(dt.parse("2016-10-13 00:00:01")))
     val partitions = rdd.partitions
 
-    partitions.size should be(2)
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(1))
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(0)
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(2))
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(1)
+    partitions.size should be(3)
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(0))
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(0)
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(1))
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(1)
+    partitions(2).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(2))
+    partitions(2).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(2)
   }
 
-  it should "Return all files with date filter B" in {
-    val files = Array(
-      GdcFile("/files/example.txt"),
-      GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
+  it should "Return 2 slots with date filter B" in {
+    val slots = Array(
+      GdcSlot("/files/example.txt", dt.parse("2016-10-11 00:00:00")),
+      GdcSlot("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+    val rdd = sc.createDateFilteredGdcRDD(GdcDownloaderFactoryHelper.createDateFactory(slots),
       GdcDownloaderParameters(), None, Option(dt
-      .parse("2016-10-13 00:00:01")))
+      .parse("2016-10-12 00:00:01")))
     val partitions = rdd.partitions
 
     partitions.size should be(2)
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(1))
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(0)
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(2))
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(1)
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(0))
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(0)
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(1))
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(1)
   }
 
-  it should "Return all files with date filter C" in {
-    val files = Array(
-      GdcFile("/files/example.txt"),
-      GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
+  it should "Return 2 slots with date filter C" in {
+    val slots = Array(
+      GdcSlot("/files/example.txt", dt.parse("2016-10-11 00:00:00")),
+      GdcSlot("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+    val rdd = sc.createDateFilteredGdcRDD(GdcDownloaderFactoryHelper.createDateFactory(slots),
       GdcDownloaderParameters(), Option(dt.parse
     ("2016-10-12 00:00:00")), None)
     val partitions = rdd.partitions
 
     partitions.size should be(2)
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(1))
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(0)
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(2))
-    partitions(1).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(1)
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(1))
+    partitions(0).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(0)
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].slot should be(slots(2))
+    partitions(1).asInstanceOf[GdcRDDPartition[GdcSlot]].index should be(1)
   }
 
-  it should "Return first file with date filter" in {
-    val files = Array(
-      GdcFile("/files/example.txt"),
-      GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
+  it should "Return no slots with date filter" in {
+    val slots = Array(
+      GdcSlot("/files/example.txt", dt.parse("2016-10-11 00:00:00")),
+      GdcSlot("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
+      GdcSlot("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
 
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
-      GdcDownloaderParameters(), Option(dt.parse
-    ("2016-10-12 00:00:00")), Option(dt.parse("2016-10-12 23:59:59")))
-    val partitions = rdd.partitions
-
-    partitions.size should be(1)
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(1))
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(0)
-  }
-
-  it should "Return last file with date filter" in {
-    val files = Array(
-      GdcFile("/files/example.txt"),
-      GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
-
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
-      GdcDownloaderParameters(), Option(dt.parse
-    ("2016-10-12 23:59:59")), Option(dt.parse("2016-10-13 00:00:01")))
-    val partitions = rdd.partitions
-
-    partitions.size should be(1)
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].gdcFile should be(files(2))
-    partitions(0).asInstanceOf[GdcRDDPartition[GdcFile]].index should be(0)
-  }
-
-  it should "Return no files with date filter" in {
-    val files = Array(
-      GdcFile("/files/example.txt"),
-      GdcFile("/files/example_20161201.txt", dt.parse("2016-10-12 00:00:00")),
-      GdcFile("/files/example_20161202.txt", dt.parse("2016-10-13 00:00:00")))
-
-    val rdd = sc.createDownloadRDD(GdcDownloaderFactoryHelper.createDownloaderFactory(files),
+    val rdd = sc.createDateFilteredGdcRDD(GdcDownloaderFactoryHelper.createDateFactory(slots),
       GdcDownloaderParameters(), None, Option(dt
-      .parse("2016-10-11 23:59:59")))
+      .parse("2016-10-10 23:59:59")))
     val partitions = rdd.partitions
 
     partitions.size should be(0)

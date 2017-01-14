@@ -155,14 +155,14 @@ class CloudStorageGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
       ("FILE_B.txt", sdf.parse("2019-12-27 01:00:00")),
       ("FILE_C.txt", sdf.parse("2019-12-27 02:00:00"))))
 
-    downloader.list() should be(List[CloudStorageFile](
-      CloudStorageFile("FILE_A.txt", Option(sdf.parse("2019-12-27 00:00:00"))),
-      CloudStorageFile("FILE_B.txt", Option(sdf.parse("2019-12-27 01:00:00"))),
-      CloudStorageFile("FILE_C.txt", Option(sdf.parse("2019-12-27 02:00:00")))
+    downloader.list() should be(List[CloudStorageSlot](
+      CloudStorageSlot("FILE_A.txt", sdf.parse("2019-12-27 00:00:00")),
+      CloudStorageSlot("FILE_B.txt", sdf.parse("2019-12-27 01:00:00")),
+      CloudStorageSlot("FILE_C.txt", sdf.parse("2019-12-27 02:00:00"))
     ))
   }
 
-  it should "work with existing file" in {
+  it should "work with existing name" in {
     val downloader = createDownloaderFile("/sample_files/sampleFile.txt")
 
     val data = Files.readAllBytes(Paths.get(getClass.getResource("/sample_files/sampleFile" +
@@ -170,18 +170,18 @@ class CloudStorageGdcDownloaderTest extends FlatSpec with Matchers with OptionVa
 
     val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
-    downloader.download(CloudStorageFile("log4j_test.xml"), out)
+    downloader.download(CloudStorageSlot("log4j_test.xml", null), out)
 
     out.toByteArray should be(data)
   }
 
-  it should "fail with bad file" in {
+  it should "fail with bad name" in {
     val downloader = createDownloaderFile(null)
 
     val out: ByteArrayOutputStream = new ByteArrayOutputStream
 
     intercept[Throwable] {
-      downloader.download(CloudStorageFile("log4j_test.xml"), out)
+      downloader.download(CloudStorageSlot("log4j_test.xml", null), out)
     }
   }
 }

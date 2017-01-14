@@ -17,28 +17,57 @@
 
 package org.apache.spark.streaming.gdc
 
-import es.alvsanand.gdc.core.downloader.GdcFile
+import es.alvsanand.gdc.core.downloader.GdcSlot
 import org.apache.spark.Partition
 
-class GdcRDDPartition[A <: GdcFile](
-                                     val gdcFile: A,
+/**
+  * A implementation of org.apache.spark.Partition for GdcR containing the slot information.
+ *
+  * @param slot The slot of the partition.
+  * @param index The index of the partition.
+  * @tparam A The type of es.alvsanand.gdc.core.downloader.GdcSlot
+  */
+class GdcRDDPartition[A <: GdcSlot](
+                                     val slot: A,
                                      val index: Int
                                    ) extends Partition {
 
+  /**
+    * The equality method for reference types.  Default implementation delegates to `eq`.
+    * @param  other    the object to compare against this object for equality.
+    * @return `true` if the receiver object is equivalent to the argument; `false` otherwise.
+    */
   override def equals(other: Any): Boolean = other match {
     case that: GdcRDDPartition[A] =>
       (that canEqual this) &&
-        gdcFile == that.gdcFile &&
+        slot == that.slot &&
         index == that.index
     case _ => false
   }
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[GdcRDDPartition[A]]
+  /**
+    * Return true if both objects are of the same Instance.
+    * @param other The object to compare
+    * @return True if both objects are of the same Instance.
+    */
+  private def canEqual(other: Any): Boolean = other.isInstanceOf[GdcRDDPartition[A]]
 
+
+  /**
+    * The hashCode method for reference types.
+    * @return the hash code value for this object.
+    */
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), gdcFile, index)
+    val state = Seq(super.hashCode(), slot, index)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 
-  override def toString: String = s"GdcRDDPartition($GdcFile, $index)"
+  /**
+    * Creates a String representation of this object.  The default
+    *  representation is platform dependent.  On the java platform it
+    *  is the concatenation of the class name, "@", and the object's
+    *  hashcode in hexadecimal.
+    * @return a String representation of the object.
+    */
+  override def toString: String = s"GdcRDDPartition($slot, $index)"
 }

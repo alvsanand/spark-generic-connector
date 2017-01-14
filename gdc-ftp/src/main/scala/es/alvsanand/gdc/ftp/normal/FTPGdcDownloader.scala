@@ -23,7 +23,7 @@ import com.wix.accord.Validator
 import com.wix.accord.dsl.{be, _}
 import es.alvsanand.gdc.core.downloader.{GdcDownloader, GdcDownloaderException, GdcDownloaderParameters}
 import es.alvsanand.gdc.core.util.IOUtils
-import es.alvsanand.gdc.ftp.{Credentials, FTPFile}
+import es.alvsanand.gdc.ftp.{FTPCredentials, FTPSlot}
 import org.apache.commons.net.ftp.{FTPClient, FTPHTTPClient, FTPReply}
 
 import scala.util.{Failure, Success, Try}
@@ -31,17 +31,17 @@ import scala.util.{Failure, Success, Try}
 
 
 /**
-  * FTPSGdcDownloader parameters.
+  * The parameters for es.alvsanand.gdc.ftp.normal.FTPGdcDownloader.
   *
-  * @param host The host of the FTP server
+  * @param host The host of the FTP server [Obligatory].
   * @param port The port of the FTP server. Default: 21.
-  * @param cred The credentials used for logging into the FTP server
-  * @param directory The directory path where the downloader will find files
+  * @param cred The credentials used for logging into the FTP server [Obligatory].
+  * @param directory The directory path where the downloader will find files [Obligatory].
   * @param defaultTimeout the default timeout to use (in ms). Default: 120 seconds.
   * @param dataTimeout The timeout used of the data connection (in ms). Default: 1200 seconds.
   */
 case class FTPParameters(host: String, port: Int = 21, directory: String,
-                         cred: Credentials, defaultTimeout: Int = 120000,
+                         cred: FTPCredentials, defaultTimeout: Int = 120000,
                          dataTimeout: Int = 1200000, proxyEnabled: Boolean = false,
                          proxyHost: Option[String] = None, proxyPort: Int = 0,
                          proxyUser: Option[String] = None, proxyPassword: Option[String] = None)
@@ -51,10 +51,27 @@ case class FTPParameters(host: String, port: Int = 21, directory: String,
       s"$proxyEnabled, $proxyHost, $proxyPort, $proxyUser, ***)"
 }
 
+/**
+  * This is a [[https://en.wikipedia.org/wiki/File_Transfer_Protocol FTP server]] implementation of
+  * es.alvsanand.gdc.core.downloader.GdcDownloader. It list and download all the files that are in
+  * a configured directory.
+  *
+  * Note: every file will be used as a slot.
+  *
+  * It has these features:
+  *
+  *  - The FTP client will authenticate using the credentials.
+  *
+  *  - If the proxy parameters are set, the FTP client will use a proxy instead of a direct
+  * connection.
+  *
+  * @param parameters The parameters of the GdcDownloader
+  */
 private[normal]
 class FTPGdcDownloader(parameters: FTPParameters)
-  extends GdcDownloader[FTPFile, FTPParameters](parameters) {
+  extends GdcDownloader[FTPSlot, FTPParameters](parameters) {
 
+  /** @inheritdoc */
   override def getValidator(): Validator[FTPParameters] = {
     validator[FTPParameters] { p =>
       p.host is notNull
@@ -76,6 +93,10 @@ class FTPGdcDownloader(parameters: FTPParameters)
 
   private lazy val client: FTPClient = initClient()
 
+  /**
+    * Method that initialize the FTP client.
+    * @return The FTP client.
+    */
   private def initClient(): FTPClient = synchronized {
     var client: FTPClient = null
 
@@ -97,8 +118,15 @@ class FTPGdcDownloader(parameters: FTPParameters)
     client
   }
 
+  /**
+    * Check if the client use a HTTP Proxy.
+    * @return True if the client use a HTTP Proxy.
+    */
   def usesProxy(): Boolean = client.isInstanceOf[FTPHTTPClient]
 
+  /**
+    * Connects to server
+    */
   private def connect(): Unit = {
     if (!client.isConnected) {
       logInfo(s"Connecting FTPDownloader[$parameters]")
@@ -121,6 +149,9 @@ class FTPGdcDownloader(parameters: FTPParameters)
     }
   }
 
+  /**
+    * Disconnects from server
+    */
   private def disconnect(): Unit = {
     logInfo(s"Disconnecting FTPDownloader[$parameters]")
 
@@ -131,6 +162,9 @@ class FTPGdcDownloader(parameters: FTPParameters)
     logInfo(s"Disconnecting FTPDownloader[$parameters]")
   }
 
+  /**
+    * Helper method to use the client
+    */
   private def useClient[T](func: () => T): T = {
     Try(connect()) match {
       case Failure(e) => throw e
@@ -147,7 +181,8 @@ class FTPGdcDownloader(parameters: FTPParameters)
     }
   }
 
-  def list(): Seq[FTPFile] = {
+  /** @inheritdoc */
+  override def list(): Seq[FTPSlot] = {
     var files: Array[org.apache.commons.net.ftp.FTPFile] = Array.empty
 
     Try({
@@ -162,8 +197,8 @@ class FTPGdcDownloader(parameters: FTPParameters)
       logDebug(s"Listed files of directory[${parameters.directory}]: [${files.mkString(",")}]")
 
       files.filter(_.isFile).map(x =>
-        FTPFile(x.getName, Option(x.getTimestamp.getTime))
-      ).sortBy(_.file).toSeq
+        FTPSlot(x.getName, x.getTimestamp.getTime)
+      ).sortBy(_.name).toSeq
     })
     match {
       case Success(v) => v
@@ -175,14 +210,15 @@ class FTPGdcDownloader(parameters: FTPParameters)
     }
   }
 
-  def download(file: FTPFile, out: OutputStream): Unit = {
+  /** @inheritdoc */
+  override def download(file: FTPSlot, out: OutputStream): Unit = {
     Try({
-      logDebug(s"Downloading file[$file] of directory[${parameters.directory}]")
+      logDebug(s"Downloading name[$file] of directory[${parameters.directory}]")
 
       val in = useClient[InputStream](() => {
         client.changeWorkingDirectory(parameters.directory)
 
-        client.retrieveFileStream(file.file)
+        client.retrieveFileStream(file.name)
       })
 
       if (in != null) {
@@ -191,12 +227,12 @@ class FTPGdcDownloader(parameters: FTPParameters)
         in.close()
       }
 
-      logDebug(s"Downloaded file[$file] of directory[${parameters.directory}]")
+      logDebug(s"Downloaded name[$file] of directory[${parameters.directory}]")
     })
     match {
       case Success(v) =>
       case Failure(e) => {
-        val msg = s"Error downloading file[$file] of directory[${parameters.directory}]"
+        val msg = s"Error downloading name[$file] of directory[${parameters.directory}]"
         logError(msg, e)
         throw GdcDownloaderException(msg, e)
       }
