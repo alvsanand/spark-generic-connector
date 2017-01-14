@@ -14,28 +14,46 @@ This library requires Spark 1.5+
 
 You can use Gdc in the Spark Shell adding the packages dependencies:
 
-* Scala 2.10
-```
-./bin/spark-shell --packages org.apache.spark.generic-downloader-connector:gdc-spark_2x_2.10:0.2.0,\
- org.apache.spark.generic-downloader-connector:gdc-google_2.10:0.2.0,org.apache.spark.generic-downloader-connector:gdc-ftp_2.10:0.2.0
-```
+* Spark 1.x:
 
-* Scala 2.11
-```
-./bin/spark-shell --packages org.apache.spark.generic-downloader-connector:gdc-spark_2x_2.11:0.2.0,\
- org.apache.spark.generic-downloader-connector:gdc-google_2.11:0.2.0,org.apache.spark.generic-downloader-connector:gdc-ftp_2.11:0.2.0
-```
+    * Scala 2.10
+    ```
+    ./bin/spark-shell --packages org.apache.spark.generic-downloader-connector:gdc-spark_2x_2.10:0.2.0,\
+     org.apache.spark.generic-downloader-connector:gdc-google_2.10:0.2.0,org.apache.spark.generic-downloader-connector:gdc-ftp_2.10:0.2.0
+    ```
+    
+    * Scala 2.11
+    ```
+    ./bin/spark-shell --packages org.apache.spark.generic-downloader-connector:gdc-spark_2x_2.11:0.2.0,\
+     org.apache.spark.generic-downloader-connector:gdc-google_2.11:0.2.0,org.apache.spark.generic-downloader-connector:gdc-ftp_2.11:0.2.0
+    ```
+
+* Spark 2.x:
+
+    * Scala 2.10
+    ```
+    ./bin/spark-shell --packages org.apache.spark.generic-downloader-connector:gdc-spark_1x_2.10:0.2.0,\
+     org.apache.spark.generic-downloader-connector:gdc-google_2.10:0.2.0,org.apache.spark.generic-downloader-connector:gdc-ftp_2.10:0.2.0
+    ```
+    
+    * Scala 2.11
+    ```
+    ./bin/spark-shell --packages org.apache.spark.generic-downloader-connector:gdc-spark_1x_2.11:0.2.0,\
+     org.apache.spark.generic-downloader-connector:gdc-google_2.11:0.2.0,org.apache.spark.generic-downloader-connector:gdc-ftp_2.11:0.2.0
+    ```
 
 ## Linking [Not yet released] as a Scala Library
 You can link against this library in your program at the following coordinates:
 
 ### GDC Core
+
   * Scala 2.10
     ```
     groupId: org.apache.spark.generic-downloader-connector
     artifactId: gdc-main_2.10
     version: 0.1.0-SNAPSHOT
     ```
+    
   * Scala 2.11
     ```
     groupId: org.apache.spark.generic-downloader-connector
@@ -44,12 +62,14 @@ You can link against this library in your program at the following coordinates:
     ```
 
 ### GDC SPARK 1.X
+
   * Scala 2.10
     ```
     groupId: org.apache.spark.generic-downloader-connector
     artifactId: gdc-spark_1x_2.10
     version: 0.1.0-SNAPSHOT
     ```
+    
   * Scala 2.11
     ```
     groupId: org.apache.spark.generic-downloader-connector
@@ -58,12 +78,14 @@ You can link against this library in your program at the following coordinates:
     ```
 
 ### GDC SPARK 2.X
+
   * Scala 2.10
     ```
     groupId: org.apache.spark.generic-downloader-connector
     artifactId: gdc-spark_2x_2.10
     version: 0.1.0-SNAPSHOT
     ```
+    
   * Scala 2.11
     ```
     groupId: org.apache.spark.generic-downloader-connector
@@ -72,12 +94,14 @@ You can link against this library in your program at the following coordinates:
     ```
 
 ### GDC Google [Google Cloud Storage / Doubleclick Datatranfers]
+
   * Scala 2.10
     ```
     groupId: org.apache.spark.generic-downloader-connector
     artifactId: gdc-google_2.10
     version: 0.1.0-SNAPSHOT
     ```
+    
   * Scala 2.11
     ```
     groupId: org.apache.spark.generic-downloader-connector
@@ -86,6 +110,7 @@ You can link against this library in your program at the following coordinates:
     ```
 
 ### GDC VFS [FTP / SFTP / FTPS]
+
   * Scala 2.10
     ```
     groupId: org.apache.spark.generic-downloader-connector
