@@ -21,7 +21,7 @@ import java.util.Date
 
 /**
   * This trait represents a slot of a es.alvsanand.gdc.core.downloader.GdcDownloader. A GdcSlot
-  * is the smallest part than a es.alvsanand.gdc.core.downloader.GdcDownloader can download.
+  * is the smallest part than a es.alvsanand.gdc.core.downloader.GdcDownloader can download in a single time.
   */
 trait GdcSlot {
   /**
@@ -48,7 +48,10 @@ trait GdcSlot {
 
 /**
   * This trait represents a slot of a es.alvsanand.gdc.core.downloader.GdcDownloader which has
-  * a date associated to it. This is very useful for streaming purposes.
+  * a date associated to it.
+  *
+  * Note: this trait must be used instead of
+  * es.alvsanand.gdc.core.downloader.GdcSlot in a Streaming scenario.
   */
 trait GdcDateSlot extends GdcSlot{
   /**

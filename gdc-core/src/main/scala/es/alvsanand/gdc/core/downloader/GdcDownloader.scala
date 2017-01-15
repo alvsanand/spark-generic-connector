@@ -71,6 +71,7 @@ abstract class GdcDownloader[A <: GdcSlot, B <: GdcDownloaderParameters]
     * List all the downloadable slots.
     * @return
     */
+  @throws(classOf[GdcDownloaderException])
   def list(): Seq[A]
 
   /**
@@ -78,6 +79,7 @@ abstract class GdcDownloader[A <: GdcSlot, B <: GdcDownloaderParameters]
     * @param slot The name to download
     * @param out The OutputStream in which the data will be stored.
     */
+  @throws(classOf[GdcDownloaderException])
   def download(slot: A, out: OutputStream): Unit
 
   /**

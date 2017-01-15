@@ -140,8 +140,4 @@ object GoogleHelper extends Logging {
       }
     }
   }
-
-  def main(args: Array[String]): Unit = {
-    checkCredentialsDirectory("/home/alvsanand/tmp/aaa")
-  }
 }

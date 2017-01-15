@@ -141,6 +141,7 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
   }
 
   /** @inheritdoc */
+  @throws(classOf[GdcDownloaderException])
   override def list(): Seq[CloudStorageSlot] = {
     var files: Array[StorageObject] = Array.empty
 
@@ -178,11 +179,12 @@ class CloudStorageGdcDownloader(parameters: CloudStorageParameters)
   }
 
   /** @inheritdoc */
-  override def download(file: CloudStorageSlot, out: OutputStream): Unit = {
+  @throws(classOf[GdcDownloaderException])
+  override def download(slot: CloudStorageSlot, out: OutputStream): Unit = {
     Try({
-      logDebug(s"Downloading name[$file] of bucket[${parameters.bucket}]")
+      logDebug(s"Downloading name[$slot] of bucket[${parameters.bucket}]")
 
-      val getObject = client.objects().get(parameters.bucket, file.name)
+      val getObject = client.objects().get(parameters.bucket, slot.name)
 
       getObject.executeMediaAndDownloadTo(out)
 

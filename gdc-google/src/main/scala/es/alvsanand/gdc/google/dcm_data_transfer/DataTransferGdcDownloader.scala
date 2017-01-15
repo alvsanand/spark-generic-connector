@@ -151,6 +151,7 @@ class DataTransferGdcDownloader(parameters: DataTransferParameters)
   }
 
   /** @inheritdoc */
+  @throws(classOf[GdcDownloaderException])
   override def list(): Seq[DataTransferSlot] = {
     var files: Array[StorageObject] = Array.empty
 
@@ -190,11 +191,12 @@ class DataTransferGdcDownloader(parameters: DataTransferParameters)
   }
 
   /** @inheritdoc */
-  override def download(file: DataTransferSlot, out: OutputStream): Unit = {
+  @throws(classOf[GdcDownloaderException])
+  override def download(slot: DataTransferSlot, out: OutputStream): Unit = {
     Try({
-      logDebug(s"Downloading name[$file] of bucket[${parameters.bucket}]")
+      logDebug(s"Downloading name[$slot] of bucket[${parameters.bucket}]")
 
-      val getObject = client.objects().get(parameters.bucket, file.name)
+      val getObject = client.objects().get(parameters.bucket, slot.name)
 
       getObject.executeMediaAndDownloadTo(out)
 

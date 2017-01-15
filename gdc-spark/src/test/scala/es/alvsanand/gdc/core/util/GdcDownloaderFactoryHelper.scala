@@ -39,13 +39,13 @@ object GdcDownloaderFactoryHelper {
             }
           }
 
-          override def download(file: GdcSlot, out: OutputStream): Unit = {
+          override def download(slot: GdcSlot, out: OutputStream): Unit = {
             if (_downloadBadTries < downloadBadTries) {
               _downloadBadTries += 1
               throw new Exception(s"Waiting until _downloadBadTries[${_downloadBadTries}]==0")
             }
             else {
-              IOUtils.copy(getClass.getResourceAsStream(file.name), out)
+              IOUtils.copy(getClass.getResourceAsStream(slot.name), out)
             }
           }
         }
@@ -80,13 +80,13 @@ object GdcDownloaderFactoryHelper {
             }
           }
 
-          override def download(file: GdcDateSlot, out: OutputStream): Unit = {
+          override def download(slot: GdcDateSlot, out: OutputStream): Unit = {
             if (_downloadBadTries < downloadBadTries) {
               _downloadBadTries += 1
               throw new Exception(s"Waiting until _downloadBadTries[${_downloadBadTries}]==0")
             }
             else {
-              IOUtils.copy(getClass.getResourceAsStream(file.name), out)
+              IOUtils.copy(getClass.getResourceAsStream(slot.name), out)
             }
           }
         }

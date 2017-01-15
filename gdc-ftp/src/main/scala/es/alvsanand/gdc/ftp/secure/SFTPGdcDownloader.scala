@@ -171,6 +171,7 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
   }
 
   /** @inheritdoc */
+  @throws(classOf[GdcDownloaderException])
   override def list(): Seq[FTPSlot] = {
     Try({
       logDebug(s"Listing files of directory[${parameters.directory}]")
@@ -217,9 +218,10 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
   }
 
   /** @inheritdoc */
-  override def download(file: FTPSlot, out: OutputStream): Unit = {
+  @throws(classOf[GdcDownloaderException])
+  override def download(slot: FTPSlot, out: OutputStream): Unit = {
     Try({
-      logDebug(s"Downloading name[$file] of directory[${parameters.directory}]")
+      logDebug(s"Downloading name[$slot] of directory[${parameters.directory}]")
 
       useClient[Unit](() => {
         val channel = client.openChannel("sftp").asInstanceOf[ChannelSftp]
@@ -229,7 +231,7 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
           channel.cd(parameters.directory)
 
 
-          val in = channel.get(file.name)
+          val in = channel.get(slot.name)
 
           if (in != null) {
             IOUtils.copy(in, out)
@@ -241,12 +243,12 @@ class SFTPGdcDownloader(parameters: SFTPParameters)
         }
       })
 
-      logDebug(s"Downloaded name[$file] of directory[${parameters.directory}]")
+      logDebug(s"Downloaded name[$slot] of directory[${parameters.directory}]")
     })
     match {
       case Success(v) =>
       case Failure(e) => {
-        val msg = s"Error downloading name[$file] of directory[${parameters.directory}]"
+        val msg = s"Error downloading slot[$slot] of directory[${parameters.directory}]"
         logError(msg, e)
         throw GdcDownloaderException(msg, e)
       }
