@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/databricks/spark-csv.svg?branch=master)](https://travis-ci.org/alvsanand/spark-generic-connector-connector.svg?branch=master)
 
-This is a package that connects almost every type of system to [Apache Spark](http://spark.apache.org/). This library can be used in batch or streaming scenarios which is awesome. From the first time, the idea is to be a _read only_ connector library. So any write operations will not be implemented.
+This library simplifies the connection of a external system with [Apache Spark](http://spark.apache.org/). Its main idea is to use a core functionality that is responsible of working with Apache Spark and implement specific connectors for any system. It can be used in batch or streaming scenarios which is awesome. From the first time, the idea is to be a _read only_ connector library. So any write operations will not be implemented.
 
 This is are the ideas behind the library:
 
@@ -29,11 +29,13 @@ You can use _Generic Connector_ in the _Spark Shell_ adding the packages depende
 * Spark 1.x:
 
     * Scala 2.10
+    
     ```
     ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_1x_2.10:0.2.0
     ```
     
     * Scala 2.11
+    
     ```
     ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_1x_2.11:0.2.0
     ```
@@ -41,11 +43,13 @@ You can use _Generic Connector_ in the _Spark Shell_ adding the packages depende
 * Spark 2.x:
 
     * Scala 2.10
+    
     ```
     ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_2x_2.10:0.2.0
     ```
     
     * Scala 2.11
+    
     ```
     ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_2x_2.11:0.2.0
     ```
@@ -56,6 +60,7 @@ You can link against this library in your program at the following coordinates:
 ### Generic Connector core
 
   * Scala 2.10
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-main_2.10
@@ -63,6 +68,7 @@ You can link against this library in your program at the following coordinates:
     ```
     
   * Scala 2.11
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-main_2.11
@@ -72,6 +78,7 @@ You can link against this library in your program at the following coordinates:
 ### Generic Connector for Apache Spark 1.X
 
   * Scala 2.10
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-spark_1x_2.10
@@ -79,6 +86,7 @@ You can link against this library in your program at the following coordinates:
     ```
     
   * Scala 2.11
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-spark_1x_2.11
@@ -88,6 +96,7 @@ You can link against this library in your program at the following coordinates:
 ### Generic Connector for Apache Spark 2.X
 
   * Scala 2.10
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-spark_2x_2.10
@@ -95,6 +104,7 @@ You can link against this library in your program at the following coordinates:
     ```
     
   * Scala 2.11
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-spark_2x_2.11
@@ -104,6 +114,7 @@ You can link against this library in your program at the following coordinates:
 ### Google connectors [Google Cloud Storage / Doubleclick Datatranfers]
 
   * Scala 2.10
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-google_2.10
@@ -111,6 +122,7 @@ You can link against this library in your program at the following coordinates:
     ```
     
   * Scala 2.11
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-google_2.11
@@ -120,6 +132,7 @@ You can link against this library in your program at the following coordinates:
 ### FTP connectors [FTP / SFTP / FTPS]
 
   * Scala 2.10
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-ftp_2.10
@@ -127,6 +140,7 @@ You can link against this library in your program at the following coordinates:
     ```
     
   * Scala 2.11
+  
     ```
     groupId: es.alvsanand
     artifactId: spark-generic-connector-ftp_2.11
@@ -145,6 +159,7 @@ Currently _Sgc_ supports two scenarios:
 In order to use the library with _Apache Spark_ in batch mode, you must follow the next steps:
  
 * Import dependencies:
+
 ```
 import org.apache.spark.streaming.sgc._
 import es.alvsanand.sgc.ftp.{FTPCredentials, FTPSlot}
@@ -152,16 +167,19 @@ import es.alvsanand.sgc.ftp.normal.{FTPSgcConnectorFactory, FTPParameters}
 ```
  
 * Create a parameters object:
+
 ```
 val parameters = FTPParameters("HOST", PORT, "DIRECTORY", FTPCredentials("USER", Option("PASSWORD"))
 ```
  
 * Create the RDD passing the SgcConnectorFactory and the parameters:
+
 ```
 val rdd = sc.createSgcRDD(FTPSgcConnectorFactory, parameters)
 ```
  
 * Use the RDD as desired:
+
 ```
 rdd.partitions.map(_.asInstanceOf[SgcRDDPartition[SgcSlot]].slot)
 rdd.saveAsTextFile("hdfs://...")
@@ -172,6 +190,7 @@ rdd.saveAsTextFile("hdfs://...")
 In order to use the library with _Apache Spark_ in streaming mode, you must follow the next steps:
  
 * Import dependencies:
+
 ```
 import org.apache.spark.streaming.sgc._
 import es.alvsanand.sgc.ftp.{FTPCredentials, FTPSlot}
@@ -179,11 +198,13 @@ import es.alvsanand.sgc.ftp.normal.{FTPSgcConnectorFactory, FTPParameters}
 ```
  
 * Create a parameters object:
+
 ```
 val parameters = FTPParameters("HOST", PORT, "DIRECTORY", FTPCredentials("USER", Option("PASSWORD"))
 ```
  
 * Create the InputDStream passing the SgcConnectorFactory and the parameters:
+
 ```
 val ssc = new StreamingContext(sc, batchTime)
 
@@ -195,6 +216,7 @@ ssc.checkpoint(checkPointDirectory)
 ```
  
 * Use the InputDStream as desired:
+
 ```
 ds.foreachRDD { rdd =>
     rddrdd.saveAsTextFile("hdfs://...")
@@ -203,9 +225,9 @@ ds.foreachRDD { rdd =>
 
 ## SgcConnector ready to use
 
-Nowadays, Sgc has implemented the following connectors/connector:
+Nowadays, Sgc has implemented the following connectors:
 
-* Google services compatible:
+* Google services:
     * CloudStorageSgcConnector: is able to fetch files from [Google Cloud Storage](https://cloud.google.com/storage).
     * DataTransferSgcConnector: is able to fetch files from [DoubleClick Data Transfer](https://support.google.com/dcm/partner/answer/165589?hl=en).
 
@@ -219,6 +241,7 @@ Nowadays, Sgc has implemented the following connectors/connector:
 ## How to create new Connectors
 
 * Import dependencies:
+
 ```
 import java.io._
 import com.wix.accord.Validator
@@ -229,11 +252,13 @@ import es.alvsanand.sgc.core.connector.{SgcConnector, SgcConnectorException, Sgc
 ```
 
 * Create a new type of _SgcConnectorParameters_:
+
 ```
 case class RssParameters(url: String) extends SgcConnectorParameters
 ```
 
 * Create a new type of _SgcSlot_:
+
 ```
 case class RssSlot(title: String, description: String, link: String, date: Date) extends SgcDateSlot
 ```
@@ -241,6 +266,7 @@ case class RssSlot(title: String, description: String, link: String, date: Date)
 > Note: in case to be streaming compatible the slot must extend _SgcDateSlot_. If not, _SgcSlot_.
 
 * Create a new type of _SgcConnector_:
+
 ```
 class RssSgcConnector(parameters: RssParameters)
   extends SgcConnector[RssSlot, RssParameters](parameters) {
@@ -252,6 +278,7 @@ class RssSgcConnector(parameters: RssParameters)
 
 * Implement the _SgcConnector_:
     1. Override _getValidator_ in order to validates the parameters:
+    
     ```
     override def getValidator(): Validator[RssParameters] = {
         validator[RssParameters] { p =>
@@ -262,6 +289,7 @@ class RssSgcConnector(parameters: RssParameters)
     ```
 
     2. Create a client and be sure it is _Thread Safe_ or there is one instance for every Thread:
+    
     ```
     private lazy val client: RSSClient = initClient()
     
@@ -273,6 +301,7 @@ class RssSgcConnector(parameters: RssParameters)
     ```
 
     3. It is also recommendable to create helper methods to use the client:
+    
     ```
       private def connect(): Unit = {
         if (!client.isConnected) {
@@ -307,6 +336,7 @@ class RssSgcConnector(parameters: RssParameters)
     ```
     
     4. Override _list_ in order to list the slots available: 
+    
     ```
     @throws(classOf[SgcConnectorException])
     def list(): Seq[RssSlot] = {
@@ -327,7 +357,8 @@ class RssSgcConnector(parameters: RssParameters)
       }
     ```
     
-    5. Override _list_ in order to validates the parameters. 
+    5. Override _list_ in order to validates the parameters:
+    
     ```
     @throws(classOf[SgcConnectorException])
       override def fetch(slot: FTPSlot, out: OutputStream): Unit = {
@@ -353,6 +384,7 @@ class RssSgcConnector(parameters: RssParameters)
     ```
 
 * Create a new type of _SgcConnectorFactory_:
+
 ```
 object RssSgcConnectorFactory extends SgcConnectorFactory[RssSlot, RssParameters] {
 
@@ -361,6 +393,10 @@ object RssSgcConnectorFactory extends SgcConnectorFactory[RssSlot, RssParameters
   }
 }
 ```
+    
+## Scaladoc
+ 
+ [Here](docs/scaladoc/index.html) you can see the Scala API documentation of the project. 
     
 ## Examples
  

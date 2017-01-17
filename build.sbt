@@ -1,4 +1,5 @@
 import sbt.ExclusionRule
+import UnidocKeys._
 
 val `testSparkVersion_1x` = settingKey[String]("The version of Spark to test against.")
 val `testSparkVersion_2x` = settingKey[String]("The version of Spark to test against.")
@@ -34,6 +35,8 @@ lazy val commonSettings = Seq(
     cp filter {_.data.getName.matches("scalatest.*")}
   },
 
+//  scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-no-expand",
+
   publishMavenStyle := true,
 
   // Skip tests during assembly
@@ -50,7 +53,7 @@ lazy val commonSettings = Seq(
   // },
 
   pomExtra := (
-    <url>https://github.com/alvsanand/spark-generic-connector-connector</url>
+    <url>https://github.com/alvsanand/spark-generic-connector</url>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -59,8 +62,8 @@ lazy val commonSettings = Seq(
         </license>
       </licenses>
       <scm>
-        <url>git@github.com:alvsanand/spark-generic-connector-connector.git</url>
-        <connection>scm:git:git@github.com:alvsanand/spark-generic-connector-connector
+        <url>git@github.com:alvsanand/spark-generic-connector.git</url>
+        <connection>scm:git:git@github.com:alvsanand/spark-generic-connector
           .git</connection>
       </scm>
       <developers>
@@ -189,6 +192,9 @@ lazy val `sgc-spark_2x` = (project in file("sgc-spark_2x")).dependsOn(`sgc-core`
 
 lazy val root = (project in file(".")).
   aggregate(`sgc-core`, `sgc-google`, `sgc-ftp`, `sgc-spark_1x`, `sgc-spark_2x`).
+  settings(commonSettings: _*).
+  settings(unidocSettings: _*).
   settings(
-    aggregate in update := false
+    aggregate in update := false,
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(`sgc-spark_1x`)
   )

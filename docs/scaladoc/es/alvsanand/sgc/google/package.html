@@ -1,0 +1,160 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>google - es.alvsanand.sgc.google</title>
+          <meta name="description" content="google - es.alvsanand.sgc.google" />
+          <meta name="keywords" content="google es.alvsanand.sgc.google" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'es.alvsanand.sgc.google.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="es">es</a>.<a href="../../package.html" class="extype" name="es.alvsanand">alvsanand</a>.<a href="../package.html" class="extype" name="es.alvsanand.sgc">sgc</a></p>
+        <h1>google</h1><span class="permalink">
+      <a href="../../../../index.html#es.alvsanand.sgc.google.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">google</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="es.alvsanand.sgc.google.GoogleHelper" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="GoogleHelper"></a>
+      <a id="GoogleHelper:GoogleHelper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="GoogleHelper$.html"><span class="name">GoogleHelper</span></a><span class="result"> extends <a href="../core/util/Logging.html" class="extype" name="es.alvsanand.sgc.core.util.Logging">Logging</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#es.alvsanand.sgc.google.package@GoogleHelper" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This object eases the task of creating authenticate into
+<a href="https://cloud.google.com/storage/" target="_blank">Google Cloud Storage</a>.</p><div class="fullcomment"><div class="comment cmt"><p>This object eases the task of creating authenticate into
+<a href="https://cloud.google.com/storage/" target="_blank">Google Cloud Storage</a>. The Google authentication method
+used by this implementation is Authorization code flow using a GooglePromptReceiver. See
+<a href="https://developers.google.com/api-client-library/java/google-api-java-client/oauth2" target="_blank">Authorization Code Flow</a> for more info.</p><p> This is is the way to do it:</p><ul><li>Open a Spark Scala Shell or Scala Shell.</li><li>Execute GoogleHelper.createCredentialsZip() passing the JSON of the OAuth 2.0 client ID and
+ the desired url to store the credentials.</li><li>GoogleHelper library will print a URL that you have to visit using a Browser.</li><li>Follow the instructions of the Google Page in order to obtain the authentication token.</li><li>Paste the token in the Shell.</li><li>The helper will create the zip and upload if the url is a HDFS file.</li></ul><p> Note: it is recommended to use a HDFS path like <a href="hdfs://127.0.0.1/credentials.zip" target="_blank">hdfs://127.0.0.1/credentials.zip</a> in order
+ to store the credentials in a distributed way. If no ever machine of the Spark cluster must
+ have a copy of this file.
+</p></div></div>
+    </li><li name="es.alvsanand.sgc.google.cloud_storage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="cloud_storage"></a>
+      <a id="cloud_storage:cloud_storage"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="cloud_storage/package.html"><span class="name">cloud_storage</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#es.alvsanand.sgc.google.package@cloud_storage" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.alvsanand.sgc.google.dcm_data_transfer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="dcm_data_transfer"></a>
+      <a id="dcm_data_transfer:dcm_data_transfer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="dcm_data_transfer/package.html"><span class="name">dcm_data_transfer</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#es.alvsanand.sgc.google.package@dcm_data_transfer" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

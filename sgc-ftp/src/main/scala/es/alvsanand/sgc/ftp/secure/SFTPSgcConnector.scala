@@ -27,6 +27,7 @@ import es.alvsanand.sgc.core.connector.{SgcConnector, SgcConnectorException, Sgc
 import es.alvsanand.sgc.core.util.IOUtils
 import es.alvsanand.sgc.ftp._
 
+import collection.JavaConverters._
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
@@ -101,14 +102,32 @@ class SFTPSgcConnector(parameters: SFTPParameters)
       client.setPassword(parameters.cred.password.get)
     }
     if(parameters.pconfig.isDefined){
-      val kp = KeyPair.load(jsch, IOUtils.getBytes(parameters.pconfig.get.privateUrl),
-        IOUtils.getBytes(parameters.pconfig.get.publicUrl))
+      val privateKey = IOUtils.getBytes(parameters.pconfig.get.privateUrl)
+      val publicKey = IOUtils.getBytes(parameters.pconfig.get.publicUrl)
 
-      val t = kp.decrypt(parameters.pconfig.get.privatePassword.getOrElse("").getBytes)
+      val privateKeyFile = IOUtils.createTempFile()
+      var privateKeyOut = new FileOutputStream(privateKeyFile)
+      IOUtils.copy(new ByteArrayInputStream(privateKey), privateKeyOut)
+      privateKeyOut.close()
 
-      jsch.addIdentity("credentials", IOUtils.getBytes(parameters.pconfig.get.privateUrl),
-        IOUtils.getBytes(parameters.pconfig.get.publicUrl),
+      val publicKeyFile = IOUtils.createTempFile()
+      val publicKeyOut = new FileOutputStream(publicKeyFile)
+      IOUtils.copy(new ByteArrayInputStream(publicKey), publicKeyOut)
+      publicKeyOut.close()
+
+      val kp = KeyPair.load(jsch, privateKeyFile.getPath, publicKeyFile.getPath)
+
+      kp.decrypt(privateKey)
+
+      privateKeyOut = new FileOutputStream(privateKeyFile)
+      IOUtils.copy(new ByteArrayInputStream(privateKey), privateKeyOut)
+      privateKeyOut.close()
+
+      jsch.addIdentity(privateKeyFile.getPath, publicKeyFile.getPath,
         parameters.pconfig.get.privatePassword.getOrElse("").getBytes)
+
+      privateKeyFile.delete()
+      publicKeyFile.delete()
     }
 
     client.setTimeout(parameters.timeout)

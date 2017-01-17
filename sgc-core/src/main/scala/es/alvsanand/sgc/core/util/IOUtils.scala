@@ -90,6 +90,22 @@ object IOUtils {
   }
 
   /**
+    * Creates a temporal file
+    * @return The temporal directory name
+    */
+  def createTempFile(): File = {
+    val temp = File.createTempFile("temp", System.nanoTime().toString)
+
+    if (!(temp.createNewFile())) {
+      throw new IOException("Could not create temp file: " + temp.getAbsolutePath())
+    }
+
+    temp.deleteOnExit()
+
+    temp
+  }
+
+  /**
     * It completely deletes a directory with its files and sub-folders
     * @param directory The directory to delete.
     */

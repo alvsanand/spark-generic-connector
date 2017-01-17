@@ -97,6 +97,15 @@ class IOUtilsTest extends FlatSpec with Matchers with OptionValues
     dir.exists() should be(false)
   }
 
+  it should "Check createTempFile" in {
+    val dir = IOUtils.createTempFile()
+
+    dir should not be null
+    dir.exists() should be(true)
+
+    dir.delete()
+  }
+
   it should "Check getFileType" in {
     IOUtils.getFileType("/FOO.txt") should be(IOUtils.LOCAL_FILE)
     IOUtils.getFileType("name:///FOO.txt") should be(IOUtils.LOCAL_FILE)

@@ -1,0 +1,228 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>secure - es.alvsanand.sgc.ftp.secure</title>
+          <meta name="description" content="secure - es.alvsanand.sgc.ftp.secure" />
+          <meta name="keywords" content="secure es.alvsanand.sgc.ftp.secure" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'es.alvsanand.sgc.ftp.secure.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="es">es</a>.<a href="../../../package.html" class="extype" name="es.alvsanand">alvsanand</a>.<a href="../../package.html" class="extype" name="es.alvsanand.sgc">sgc</a>.<a href="../package.html" class="extype" name="es.alvsanand.sgc.ftp">ftp</a></p>
+        <h1>secure</h1><span class="permalink">
+      <a href="../../../../../index.html#es.alvsanand.sgc.ftp.secure.package" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">secure</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="es.alvsanand.sgc.ftp.secure.FTPSParameters" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="FTPSParametersextendsSgcConnectorParameterswithProductwithSerializable"></a>
+      <a id="FTPSParameters:FTPSParameters"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="FTPSParameters.html"><span class="name">FTPSParameters</span></a><span class="params">(<span name="host">host: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="port">port: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">990</span></span>, <span name="directory">directory: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="cred">cred: <a href="../FTPCredentials.html" class="extype" name="es.alvsanand.sgc.ftp.FTPCredentials">FTPCredentials</a></span>, <span name="kconfig">kconfig: <span class="extype" name="scala.Option">Option</span>[<a href="KeystoreConfig.html" class="extype" name="es.alvsanand.sgc.ftp.secure.KeystoreConfig">KeystoreConfig</a>] = <span class="symbol">None</span></span>, <span name="tconfig">tconfig: <span class="extype" name="scala.Option">Option</span>[<a href="KeystoreConfig.html" class="extype" name="es.alvsanand.sgc.ftp.secure.KeystoreConfig">KeystoreConfig</a>] = <span class="symbol">None</span></span>, <span name="defaultTimeout">defaultTimeout: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">120000</span></span>, <span name="dataTimeout">dataTimeout: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">1200000</span></span>)</span><span class="result"> extends <a href="../../core/connector/SgcConnectorParameters.html" class="extype" name="es.alvsanand.sgc.core.connector.SgcConnectorParameters">SgcConnectorParameters</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#es.alvsanand.sgc.ftp.secure.package@FTPSParametersextendsSgcConnectorParameterswithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The parameters for es.alvsanand.sgc.ftp.secure.FTPSSgcConnector.</p><div class="fullcomment"><div class="comment cmt"><p>The parameters for es.alvsanand.sgc.ftp.secure.FTPSSgcConnector.
+</p></div><dl class="paramcmts block"><dt class="param">host</dt><dd class="cmt"><p>The host of the FTPS server [Required].</p></dd><dt class="param">port</dt><dd class="cmt"><p>The port of the FTPS server. Default: 990.</p></dd><dt class="param">directory</dt><dd class="cmt"><p>The directory path where the connector will find files [Required].</p></dd><dt class="param">cred</dt><dd class="cmt"><p>The credentials used for logging into the FTPS server [Required].</p></dd><dt class="param">kconfig</dt><dd class="cmt"><p>The keystore used to log in the FTPS server. See
+               <a href="https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html" target="_blank">https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html</a> for
+               more details.</p></dd><dt class="param">tconfig</dt><dd class="cmt"><p>The truststore used to log in the FTPS server. See
+               <a href="https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html" target="_blank">https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html</a> for
+               more details.</p></dd><dt class="param">defaultTimeout</dt><dd class="cmt"><p>the default timeout to use (in ms). Default: 120 seconds.</p></dd><dt class="param">dataTimeout</dt><dd class="cmt"><p>The timeout used of the data connection (in ms). Default: 1200 seconds.</p></dd></dl></div>
+    </li><li name="es.alvsanand.sgc.ftp.secure.KeyConfig" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="KeyConfigextendsProductwithSerializable"></a>
+      <a id="KeyConfig:KeyConfig"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="KeyConfig.html"><span class="name">KeyConfig</span></a><span class="params">(<span name="privateUrl">privateUrl: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="publicUrl">publicUrl: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="privatePassword">privatePassword: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#es.alvsanand.sgc.ftp.secure.package@KeyConfigextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This class contains the SSH authentication configuration.</p><div class="fullcomment"><div class="comment cmt"><p>This class contains the SSH authentication configuration.</p><p>Note: only is supported pbes2 Encrypted Private Key.
+</p></div><dl class="paramcmts block"><dt class="param">privateUrl</dt><dd class="cmt"><p>The url to find the Private Key.</p></dd><dt class="param">publicUrl</dt><dd class="cmt"><p>The url to find the Public Key.</p></dd><dt class="param">privatePassword</dt><dd class="cmt"><p>The password used in the Private Key.</p></dd></dl></div>
+    </li><li name="es.alvsanand.sgc.ftp.secure.KeystoreConfig" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="KeystoreConfigextendsProductwithSerializable"></a>
+      <a id="KeystoreConfig:KeystoreConfig"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="KeystoreConfig.html"><span class="name">KeystoreConfig</span></a><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="keystorePassword">keystorePassword: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="keystoreType">keystoreType: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">KeyStore.getDefaultType()</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#es.alvsanand.sgc.ftp.secure.package@KeystoreConfigextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This class represents the parameter used to create a
+<a href="https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html" target="_blank">https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html</a>.</p><div class="fullcomment"><div class="comment cmt"><p>This class represents the parameter used to create a
+<a href="https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html" target="_blank">https://docs.oracle.com/javase/7/docs/api/java/security/KeyStore.html</a>.</p></div><dl class="paramcmts block"><dt class="param">url</dt><dd class="cmt"><p>The url to find the KeyStore</p></dd><dt class="param">keystorePassword</dt><dd class="cmt"><p>The password used in the KeyStore.</p></dd><dt class="param">keystoreType</dt><dd class="cmt"><p>The KeyStore type.</p></dd></dl></div>
+    </li><li name="es.alvsanand.sgc.ftp.secure.SFTPParameters" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SFTPParametersextendsSgcConnectorParameterswithProductwithSerializable"></a>
+      <a id="SFTPParameters:SFTPParameters"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SFTPParameters.html"><span class="name">SFTPParameters</span></a><span class="params">(<span name="host">host: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="port">port: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">22</span></span>, <span name="directory">directory: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="cred">cred: <a href="../FTPCredentials.html" class="extype" name="es.alvsanand.sgc.ftp.FTPCredentials">FTPCredentials</a></span>, <span name="pconfig">pconfig: <span class="extype" name="scala.Option">Option</span>[<a href="KeyConfig.html" class="extype" name="es.alvsanand.sgc.ftp.secure.KeyConfig">KeyConfig</a>] = <span class="symbol">None</span></span>, <span name="timeout">timeout: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">120000</span></span>)</span><span class="result"> extends <a href="../../core/connector/SgcConnectorParameters.html" class="extype" name="es.alvsanand.sgc.core.connector.SgcConnectorParameters">SgcConnectorParameters</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#es.alvsanand.sgc.ftp.secure.package@SFTPParametersextendsSgcConnectorParameterswithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The parameters for es.alvsanand.sgc.ftp.secure.SFTPSgcConnector.</p><div class="fullcomment"><div class="comment cmt"><p>The parameters for es.alvsanand.sgc.ftp.secure.SFTPSgcConnector.
+</p></div><dl class="paramcmts block"><dt class="param">host</dt><dd class="cmt"><p>The host of the SFTP server [Obligatory].</p></dd><dt class="param">port</dt><dd class="cmt"><p>The port of the SFTP server. Default: 22.</p></dd><dt class="param">directory</dt><dd class="cmt"><p>The directory path where the connector will find files [Obligatory].</p></dd><dt class="param">cred</dt><dd class="cmt"><p>The credentials used for logging into the SFTP server [Obligatory].</p></dd><dt class="param">pconfig</dt><dd class="cmt"><p>The private/public key used to log in the SFTP server.</p></dd><dt class="param">timeout</dt><dd class="cmt"><p>the default timeout to use (in ms). Default: 120 seconds.</p></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="es.alvsanand.sgc.ftp.secure.FTPSSgcConnectorFactory" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="FTPSSgcConnectorFactory"></a>
+      <a id="FTPSSgcConnectorFactory:FTPSSgcConnectorFactory"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FTPSSgcConnectorFactory$.html"><span class="name">FTPSSgcConnectorFactory</span></a><span class="result"> extends <a href="../../core/connector/SgcConnectorFactory.html" class="extype" name="es.alvsanand.sgc.core.connector.SgcConnectorFactory">SgcConnectorFactory</a>[<a href="../FTPSlot.html" class="extype" name="es.alvsanand.sgc.ftp.FTPSlot">FTPSlot</a>, <a href="FTPSParameters.html" class="extype" name="es.alvsanand.sgc.ftp.secure.FTPSParameters">FTPSParameters</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#es.alvsanand.sgc.ftp.secure.package@FTPSSgcConnectorFactory" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This Factory creates instances of es.alvsanand.sgc.core.connector.SgcConnector for
+integrating with a <a href="https://en.wikipedia.org/wiki/File_Transfer_Protocol" target="_blank">FTPS server</a>.</p><div class="fullcomment"><div class="comment cmt"><p>This Factory creates instances of es.alvsanand.sgc.core.connector.SgcConnector for
+integrating with a <a href="https://en.wikipedia.org/wiki/File_Transfer_Protocol" target="_blank">FTPS server</a>. It
+list and fetch all the files that are in a configured directory.</p><p>Note: every file will be used as a slot.</p><p>It has these features:</p><ul><li>The FTP client will authenticate using the credentials.</li><li>If the keystore is set, the FTPS client set NeedClientAuth to true. That means the client must
+ use a a certificate to create the SSL connection and the server must validate the client
+ certificate.</li><li>If truststore is set, the FTPS client will check that the server certificate
+ is valid using that truststore. That means that if the sever certificate is not in the
+ truststore the connection will fail.
+</li></ul></div></div>
+    </li><li name="es.alvsanand.sgc.ftp.secure.SFTPSgcConnectorFactory" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="SFTPSgcConnectorFactory"></a>
+      <a id="SFTPSgcConnectorFactory:SFTPSgcConnectorFactory"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SFTPSgcConnectorFactory$.html"><span class="name">SFTPSgcConnectorFactory</span></a><span class="result"> extends <a href="../../core/connector/SgcConnectorFactory.html" class="extype" name="es.alvsanand.sgc.core.connector.SgcConnectorFactory">SgcConnectorFactory</a>[<a href="../FTPSlot.html" class="extype" name="es.alvsanand.sgc.ftp.FTPSlot">FTPSlot</a>, <a href="SFTPParameters.html" class="extype" name="es.alvsanand.sgc.ftp.secure.SFTPParameters">SFTPParameters</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#es.alvsanand.sgc.ftp.secure.package@SFTPSgcConnectorFactory" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This Factory creates instances of es.alvsanand.sgc.core.connector.SgcConnector for
+integrating with a <a href="https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol" target="_blank">SFTP server</a>.</p><div class="fullcomment"><div class="comment cmt"><p>This Factory creates instances of es.alvsanand.sgc.core.connector.SgcConnector for
+integrating with a <a href="https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol" target="_blank">SFTP server</a>. It
+list and fetch all the files that are in a configured directory.</p><p>Note: every file will be used as a slot.</p><p>It has these features:</p><ul><li>The SFTP client will authenticate using the credentials.</li><li>If the keystore is set, the SFTP client will use the private key to authenticate instead of
+ the password.
+</li></ul></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
