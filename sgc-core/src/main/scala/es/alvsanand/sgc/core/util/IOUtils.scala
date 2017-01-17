@@ -96,10 +96,6 @@ object IOUtils {
   def createTempFile(): File = {
     val temp = File.createTempFile("temp", System.nanoTime().toString)
 
-    if (!(temp.createNewFile())) {
-      throw new IOException("Could not create temp file: " + temp.getAbsolutePath())
-    }
-
     temp.deleteOnExit()
 
     temp
