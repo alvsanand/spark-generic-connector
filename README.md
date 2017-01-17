@@ -1,6 +1,6 @@
 # Generic Connector for Apache Spark
 
-[![Build Status](https://travis-ci.org/alvsanand/spark-generic-connector.svg?branch=master)
+[![Build Status](https://travis-ci.org/alvsanand/spark-generic-connector.svg?branch=master)](https://travis-ci.org/alvsanand/spark-generic-connector)
 
 This library simplifies the connection of a external system with [Apache Spark](http://spark.apache.org/). Its main idea is to use a core functionality that is responsible of working with Apache Spark and implement specific connectors for any system. It can be used in batch or streaming scenarios which is awesome. From the first time, the idea is to be a _read only_ connector library. So any write operations will not be implemented.
 
