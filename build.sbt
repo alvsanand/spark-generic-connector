@@ -108,7 +108,11 @@ lazy val `sgc-google` = (project in file("sgc-google")).dependsOn(`sgc-core`).
       "com.google.api-client" % "google-api-client-java6" % "1.22.0",
       "com.google.apis" % "google-api-services-storage" % "v1-rev86-1.22.0",
       "com.google.http-client" % "google-http-client-jackson2" % "1.22.0",
-      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0",
+      ("com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0")
+        .excludeAll(ExclusionRule("org.eclipse.jetty.orbit", "javax.servlet"),
+                    ExclusionRule("org.eclipse.jetty.orbit", "servlet-api")),
+
+      "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided",
 
       "org.apache.hadoop" % "hadoop-common" % "2.6.0" % "provided",
       "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % "provided"
@@ -123,12 +127,13 @@ lazy val `sgc-ftp` = (project in file("sgc-ftp")).dependsOn(`sgc-core`).
     assembleArtifact in assembly := false,
 
     libraryDependencies ++= Seq(
-      "commons-net" % "commons-net" % "3.5",
       "com.jcraft" % "jsch" % "0.1.54",
 
       "org.apache.ftpserver" % "ftpserver-core" % "1.1.0" % "test",
       "org.apache.sshd" % "sshd-core" % "1.3.0" % "test",
 
+
+      "commons-net" % "commons-net" % "2.2" % "provided",
       "org.apache.hadoop" % "hadoop-common" % "2.6.0" % "provided",
       "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % "provided"
     )
