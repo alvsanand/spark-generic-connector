@@ -122,7 +122,7 @@ lazy val `sgc-google` = (project in file("sgc-google")).dependsOn(`sgc-core`).
 lazy val `sgc-ftp` = (project in file("sgc-ftp")).dependsOn(`sgc-core`).
   settings(commonSettings: _*).
   settings(
-    name := "sgc-ftp",
+    name := "spark-generic-connector-ftp",
 
     assembleArtifact in assembly := false,
 
@@ -142,7 +142,7 @@ lazy val `sgc-ftp` = (project in file("sgc-ftp")).dependsOn(`sgc-core`).
 lazy val `sgc-spark_1x` = (project in file("sgc-spark_1x")).dependsOn(`sgc-core`, `sgc-google`, `sgc-ftp`).
   settings(commonSettings: _*).
   settings(
-    name := "sgc-spark_1x",
+    name := "spark-generic-connector-spark_1x",
 
     assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}-${version.value}_assembly.jar",
 
@@ -173,7 +173,7 @@ lazy val `sgc-spark_1x` = (project in file("sgc-spark_1x")).dependsOn(`sgc-core`
 lazy val `sgc-spark_2x` = (project in file("sgc-spark_2x")).dependsOn(`sgc-core`, `sgc-google`, `sgc-ftp`).
   settings(commonSettings: _*).
   settings(
-    name := "sgc-spark_2x",
+    name := "spark-generic-connector-spark_2x",
 
     assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}-${version.value}_assembly.jar",
 
