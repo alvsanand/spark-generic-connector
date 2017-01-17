@@ -12,7 +12,7 @@ parallelExecution in ThisBuild := false
 
 lazy val commonSettings = Seq(
   organization := "es.alvsanand",
-  name := "spark-generic-downloader-connector-main",
+  name := "spark-generic-connector-main",
   version := "0.2.0-SNAPSHOT",
 
   scalaVersion := "2.11.7",
@@ -50,7 +50,7 @@ lazy val commonSettings = Seq(
   // },
 
   pomExtra := (
-    <url>https://github.com/alvsanand/spark-generic-downloader-connector</url>
+    <url>https://github.com/alvsanand/spark-generic-connector-connector</url>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -59,8 +59,8 @@ lazy val commonSettings = Seq(
         </license>
       </licenses>
       <scm>
-        <url>git@github.com:alvsanand/spark-generic-downloader-connector.git</url>
-        <connection>scm:git:git@github.com:alvsanand/spark-generic-downloader-connector
+        <url>git@github.com:alvsanand/spark-generic-connector-connector.git</url>
+        <connection>scm:git:git@github.com:alvsanand/spark-generic-connector-connector
           .git</connection>
       </scm>
       <developers>
@@ -71,10 +71,10 @@ lazy val commonSettings = Seq(
       </developers>)
 )
 
-lazy val `sgdc-core` = (project in file("sgdc-core")).
+lazy val `sgc-core` = (project in file("sgc-core")).
   settings(commonSettings: _*).
   settings(
-    name := "spark-generic-downloader-connector-core",
+    name := "spark-generic-connector-core",
 
     assembleArtifact in assembly := false,
 
@@ -94,10 +94,10 @@ lazy val `sgdc-core` = (project in file("sgdc-core")).
     )
   )
 
-lazy val `sgdc-google` = (project in file("sgdc-google")).dependsOn(`sgdc-core`).
+lazy val `sgc-google` = (project in file("sgc-google")).dependsOn(`sgc-core`).
   settings(commonSettings: _*).
   settings(
-    name := "spark-generic-downloader-connector-google",
+    name := "spark-generic-connector-google",
 
     assembleArtifact in assembly := false,
 
@@ -112,10 +112,10 @@ lazy val `sgdc-google` = (project in file("sgdc-google")).dependsOn(`sgdc-core`)
     )
   )
 
-lazy val `sgdc-ftp` = (project in file("sgdc-ftp")).dependsOn(`sgdc-core`).
+lazy val `sgc-ftp` = (project in file("sgc-ftp")).dependsOn(`sgc-core`).
   settings(commonSettings: _*).
   settings(
-    name := "sgdc-ftp",
+    name := "sgc-ftp",
 
     assembleArtifact in assembly := false,
 
@@ -131,10 +131,10 @@ lazy val `sgdc-ftp` = (project in file("sgdc-ftp")).dependsOn(`sgdc-core`).
     )
   )
 
-lazy val `sgdc-spark_1x` = (project in file("sgdc-spark_1x")).dependsOn(`sgdc-core`, `sgdc-google`, `sgdc-ftp`).
+lazy val `sgc-spark_1x` = (project in file("sgc-spark_1x")).dependsOn(`sgc-core`, `sgc-google`, `sgc-ftp`).
   settings(commonSettings: _*).
   settings(
-    name := "sgdc-spark_1x",
+    name := "sgc-spark_1x",
 
     assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}-${version.value}_assembly.jar",
 
@@ -153,19 +153,19 @@ lazy val `sgdc-spark_1x` = (project in file("sgdc-spark_1x")).dependsOn(`sgdc-co
     ),
 
     unmanagedSourceDirectories in Compile +=
-      baseDirectory.value.getParentFile() / "sgdc-spark/src/main/scala",
+      baseDirectory.value.getParentFile() / "sgc-spark/src/main/scala",
     unmanagedSourceDirectories in Test +=
-      baseDirectory.value.getParentFile() / "sgdc-spark/src/test/scala",
+      baseDirectory.value.getParentFile() / "sgc-spark/src/test/scala",
     unmanagedResourceDirectories in Compile +=
-      baseDirectory.value.getParentFile() / "sgdc-spark/src/main/resources",
+      baseDirectory.value.getParentFile() / "sgc-spark/src/main/resources",
     unmanagedResourceDirectories in Test +=
-      baseDirectory.value.getParentFile() / "sgdc-spark/src/test/resources"
+      baseDirectory.value.getParentFile() / "sgc-spark/src/test/resources"
   )
 
-lazy val `sgdc-spark_2x` = (project in file("sgdc-spark_2x")).dependsOn(`sgdc-core`, `sgdc-google`, `sgdc-ftp`).
+lazy val `sgc-spark_2x` = (project in file("sgc-spark_2x")).dependsOn(`sgc-core`, `sgc-google`, `sgc-ftp`).
   settings(commonSettings: _*).
   settings(
-    name := "sgdc-spark_2x",
+    name := "sgc-spark_2x",
 
     assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}-${version.value}_assembly.jar",
 
@@ -178,17 +178,17 @@ lazy val `sgdc-spark_2x` = (project in file("sgdc-spark_2x")).dependsOn(`sgdc-co
     ),
 
     unmanagedSourceDirectories in Compile +=
-      baseDirectory.value.getParentFile() / "sgdc-spark/src/main/scala",
+      baseDirectory.value.getParentFile() / "sgc-spark/src/main/scala",
     unmanagedSourceDirectories in Test +=
-      baseDirectory.value.getParentFile() / "sgdc-spark/src/test/scala",
+      baseDirectory.value.getParentFile() / "sgc-spark/src/test/scala",
     unmanagedResourceDirectories in Compile +=
-      baseDirectory.value.getParentFile() / "sgdc-spark/src/main/resources",
+      baseDirectory.value.getParentFile() / "sgc-spark/src/main/resources",
     unmanagedResourceDirectories in Test +=
-      baseDirectory.value.getParentFile() / "sgdc-spark/src/test/resources"
+      baseDirectory.value.getParentFile() / "sgc-spark/src/test/resources"
   )
 
 lazy val root = (project in file(".")).
-  aggregate(`sgdc-core`, `sgdc-google`, `sgdc-ftp`, `sgdc-spark_1x`, `sgdc-spark_2x`).
+  aggregate(`sgc-core`, `sgc-google`, `sgc-ftp`, `sgc-spark_1x`, `sgc-spark_2x`).
   settings(
     aggregate in update := false
   )

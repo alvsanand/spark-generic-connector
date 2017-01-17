@@ -1,6 +1,6 @@
-# Generic Downloader Connector for Apache Spark
+# Generic Connector for Apache Spark
 
-[![Build Status](https://travis-ci.org/databricks/spark-csv.svg?branch=master)](https://travis-ci.org/alvsanand/spark-generic-downloader-connector.svg?branch=master)
+[![Build Status](https://travis-ci.org/databricks/spark-csv.svg?branch=master)](https://travis-ci.org/alvsanand/spark-generic-connector-connector.svg?branch=master)
 
 This is a package that connects almost every type of system to [Apache Spark](http://spark.apache.org/). This library can be used in batch or streaming scenarios which is awesome. From the first time, the idea is to be a _read only_ connector library. So any write operations will not be implemented.
 
@@ -8,15 +8,15 @@ This is are the ideas behind the library:
 
 * The Spark core of the library is shared by all the connectors.
 * Batch and streaming scenarios are compatible with the library.
-* It is very easy and fast to integrate with a new system. Just extends _SgdcDownloader_.
-* _SgdcDownloader_ has two operation:
- * `def list(): Seq[SgdcSlot]`: list all the slots available to download.
- * `def download(slot: SgdcSlot, out: OutputStream)`: download a slot to memory.
-* A slot is the smallest part than a _SgdcDownloader_ can download  in a single time. That means that the data of a slot cannot be split.
-* In order to be streaming compatible the slot returned by the _SgdcDownloader_ must contains date information \(_SgdcDateSlot_\) in order to be sorted by time. 
+* It is very easy and fast to integrate with a new system. Just extends _SgcConnector_.
+* _SgcConnector_ has two operation:
+ * `def list(): Seq[SgcSlot]`: list all the slots available to fetch.
+ * `def fetch(slot: SgcSlot, out: OutputStream)`: fetch a slot to memory.
+* A slot is the smallest part than a _SgcConnector_ can fetch  in a single time. That means that the data of a slot cannot be split.
+* In order to be streaming compatible the slot returned by the _SgcConnector_ must contains date information \(_SgcDateSlot_\) in order to be sorted by time. 
 
 
-> NOTE: Generic Downloader Connector is with Apache Spark > 1.5.X and only for the Scala/Java interpreter.
+> NOTE: Generic Connector is with Apache Spark > 1.5.X and only for the Scala/Java interpreter.
 
 ## Requirements
 
@@ -24,80 +24,80 @@ This library requires _Spark 1.5+_
 
 ## Using in Apache Spark as a package [Not yet released]
 
-You can use _Generic Downloader Connector_ in the _Spark Shell_ adding the packages dependencies:
+You can use _Generic Connector_ in the _Spark Shell_ adding the packages dependencies:
 
 * Spark 1.x:
 
     * Scala 2.10
     ```
-    ./bin/spark-shell --packages es.alvsanand:spark-generic-downloader-connector-spark_1x_2.10:0.2.0
+    ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_1x_2.10:0.2.0
     ```
     
     * Scala 2.11
     ```
-    ./bin/spark-shell --packages es.alvsanand:spark-generic-downloader-connector-spark_1x_2.11:0.2.0
+    ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_1x_2.11:0.2.0
     ```
 
 * Spark 2.x:
 
     * Scala 2.10
     ```
-    ./bin/spark-shell --packages es.alvsanand:spark-generic-downloader-connector-spark_2x_2.10:0.2.0
+    ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_2x_2.10:0.2.0
     ```
     
     * Scala 2.11
     ```
-    ./bin/spark-shell --packages es.alvsanand:spark-generic-downloader-connector-spark_2x_2.11:0.2.0
+    ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_2x_2.11:0.2.0
     ```
 
 ## Linking [Not yet released] as a Scala Library
 You can link against this library in your program at the following coordinates:
 
-### Generic Downloader Connector core
+### Generic Connector core
 
   * Scala 2.10
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-main_2.10
+    artifactId: spark-generic-connector-main_2.10
     version: 0.2.0
     ```
     
   * Scala 2.11
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-main_2.11
+    artifactId: spark-generic-connector-main_2.11
     version: 0.2.0
     ```
 
-### Generic Downloader Connector for Apache Spark 1.X
+### Generic Connector for Apache Spark 1.X
 
   * Scala 2.10
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-spark_1x_2.10
+    artifactId: spark-generic-connector-spark_1x_2.10
     version: 0.2.0
     ```
     
   * Scala 2.11
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-spark_1x_2.11
+    artifactId: spark-generic-connector-spark_1x_2.11
     version: 0.2.0
     ```
 
-### Generic Downloader Connector for Apache Spark 2.X
+### Generic Connector for Apache Spark 2.X
 
   * Scala 2.10
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-spark_2x_2.10
+    artifactId: spark-generic-connector-spark_2x_2.10
     version: 0.2.0
     ```
     
   * Scala 2.11
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-spark_2x_2.11
+    artifactId: spark-generic-connector-spark_2x_2.11
     version: 0.2.0
     ```
 
@@ -106,14 +106,14 @@ You can link against this library in your program at the following coordinates:
   * Scala 2.10
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-google_2.10
+    artifactId: spark-generic-connector-google_2.10
     version: 0.2.0
     ```
     
   * Scala 2.11
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-google_2.11
+    artifactId: spark-generic-connector-google_2.11
     version: 0.2.0
     ```
 
@@ -122,20 +122,20 @@ You can link against this library in your program at the following coordinates:
   * Scala 2.10
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-ftp_2.10
+    artifactId: spark-generic-connector-ftp_2.10
     version: 0.2.0
     ```
     
   * Scala 2.11
     ```
     groupId: es.alvsanand
-    artifactId: spark-generic-downloader-connector-ftp_2.11
+    artifactId: spark-generic-connector-ftp_2.11
     version: 0.2.0
     ```
 
 ## How to use it
 
-Currently _Sgdc_ supports two scenarios:
+Currently _Sgc_ supports two scenarios:
 
 * Batch
 * Streaming
@@ -146,9 +146,9 @@ In order to use the library with _Apache Spark_ in batch mode, you must follow t
  
 * Import dependencies:
 ```
-import org.apache.spark.streaming.sgdc._
-import es.alvsanand.sgdc.ftp.{FTPCredentials, FTPSlot}
-import es.alvsanand.sgdc.ftp.normal.{FTPSgdcDownloaderFactory, FTPParameters}
+import org.apache.spark.streaming.sgc._
+import es.alvsanand.sgc.ftp.{FTPCredentials, FTPSlot}
+import es.alvsanand.sgc.ftp.normal.{FTPSgcConnectorFactory, FTPParameters}
 ```
  
 * Create a parameters object:
@@ -156,14 +156,14 @@ import es.alvsanand.sgdc.ftp.normal.{FTPSgdcDownloaderFactory, FTPParameters}
 val parameters = FTPParameters("HOST", PORT, "DIRECTORY", FTPCredentials("USER", Option("PASSWORD"))
 ```
  
-* Create the RDD passing the SgdcDownloaderFactory and the parameters:
+* Create the RDD passing the SgcConnectorFactory and the parameters:
 ```
-val rdd = sc.createSgdcRDD(FTPSgdcDownloaderFactory, parameters)
+val rdd = sc.createSgcRDD(FTPSgcConnectorFactory, parameters)
 ```
  
 * Use the RDD as desired:
 ```
-rdd.partitions.map(_.asInstanceOf[SgdcRDDPartition[SgdcSlot]].slot)
+rdd.partitions.map(_.asInstanceOf[SgcRDDPartition[SgcSlot]].slot)
 rdd.saveAsTextFile("hdfs://...")
 ```
 
@@ -173,9 +173,9 @@ In order to use the library with _Apache Spark_ in streaming mode, you must foll
  
 * Import dependencies:
 ```
-import org.apache.spark.streaming.sgdc._
-import es.alvsanand.sgdc.ftp.{FTPCredentials, FTPSlot}
-import es.alvsanand.sgdc.ftp.normal.{FTPSgdcDownloaderFactory, FTPParameters}
+import org.apache.spark.streaming.sgc._
+import es.alvsanand.sgc.ftp.{FTPCredentials, FTPSlot}
+import es.alvsanand.sgc.ftp.normal.{FTPSgcConnectorFactory, FTPParameters}
 ```
  
 * Create a parameters object:
@@ -183,11 +183,11 @@ import es.alvsanand.sgdc.ftp.normal.{FTPSgdcDownloaderFactory, FTPParameters}
 val parameters = FTPParameters("HOST", PORT, "DIRECTORY", FTPCredentials("USER", Option("PASSWORD"))
 ```
  
-* Create the InputDStream passing the SgdcDownloaderFactory and the parameters:
+* Create the InputDStream passing the SgcConnectorFactory and the parameters:
 ```
 val ssc = new StreamingContext(sc, batchTime)
 
-val ds = ssc.createSgdcInputDStream(FTPSgdcDownloaderFactory, parameters, range)
+val ds = ssc.createSgcInputDStream(FTPSgcConnectorFactory, parameters, range)
 
 ds.checkpoint(checkpointTime)
 
@@ -201,56 +201,56 @@ ds.foreachRDD { rdd =>
 }
 ```
 
-## SgdcDownloader ready to use
+## SgcConnector ready to use
 
-Nowadays, Sgdc has implemented the following downloaders/connector:
+Nowadays, Sgc has implemented the following connectors/connector:
 
 * Google services compatible:
-    * CloudStorageSgdcDownloader: is able to download files from [Google Cloud Storage](https://cloud.google.com/storage).
-    * DataTransferSgdcDownloader: is able to download files from [DoubleClick Data Transfer](https://support.google.com/dcm/partner/answer/165589?hl=en).
+    * CloudStorageSgcConnector: is able to fetch files from [Google Cloud Storage](https://cloud.google.com/storage).
+    * DataTransferSgcConnector: is able to fetch files from [DoubleClick Data Transfer](https://support.google.com/dcm/partner/answer/165589?hl=en).
 
 * FTP servers like:
-    * FTPSgdcDownloader: is able to download files from a FTP server.
-    * FTPSSgdcDownloader: is able to download files from a FTPS server
-    * SFTPSgdcDownloader: is able to download files from a SFTP server
+    * FTPSgcConnector: is able to fetch files from a FTP server.
+    * FTPSSgcConnector: is able to fetch files from a FTPS server
+    * SFTPSgcConnector: is able to fetch files from a SFTP server
     
-> Note: for more details of every downloaders visit [Examples section](#examples)
+> Note: for more details of every connectors visit [Examples section](#examples)
 
-## How to create new Downloaders
+## How to create new Connectors
 
 * Import dependencies:
 ```
 import java.io._
 import com.wix.accord.Validator
 import com.wix.accord.dsl.{be, _}
-import es.alvsanand.sgdc.core.downloader.{SgdcDownloader, SgdcDownloaderException, SgdcDownloaderParameters}
+import es.alvsanand.sgc.core.connector.{SgcConnector, SgcConnectorException, SgcConnectorParameters}
 
 // Every other required dependency
 ```
 
-* Create a new type of _SgdcDownloaderParameters_:
+* Create a new type of _SgcConnectorParameters_:
 ```
-case class RssParameters(url: String) extends SgdcDownloaderParameters
-```
-
-* Create a new type of _SgdcSlot_:
-```
-case class RssSlot(title: String, description: String, link: String, date: Date) extends SgdcDateSlot
+case class RssParameters(url: String) extends SgcConnectorParameters
 ```
 
-> Note: in case to be streaming compatible the slot must extend _SgdcDateSlot_. If not, _SgdcSlot_.
-
-* Create a new type of _SgdcDownloader_:
+* Create a new type of _SgcSlot_:
 ```
-class RssSgdcDownloader(parameters: RssParameters)
-  extends SgdcDownloader[RssSlot, RssParameters](parameters) {
+case class RssSlot(title: String, description: String, link: String, date: Date) extends SgcDateSlot
+```
+
+> Note: in case to be streaming compatible the slot must extend _SgcDateSlot_. If not, _SgcSlot_.
+
+* Create a new type of _SgcConnector_:
+```
+class RssSgcConnector(parameters: RssParameters)
+  extends SgcConnector[RssSlot, RssParameters](parameters) {
   
   ......
 
 }
 ```
 
-* Implement the _SgdcDownloader_:
+* Implement the _SgcConnector_:
     1. Override _getValidator_ in order to validates the parameters:
     ```
     override def getValidator(): Validator[RssParameters] = {
@@ -277,7 +277,7 @@ class RssSgdcDownloader(parameters: RssParameters)
       private def connect(): Unit = {
         if (!client.isConnected) {
           Try(client.connect()) match {
-            case Failure(e) => throw SgdcDownloaderException(s"Error connecting to server", e)
+            case Failure(e) => throw SgcConnectorException(s"Error connecting to server", e)
             case _ =>
           }
         }
@@ -308,7 +308,7 @@ class RssSgdcDownloader(parameters: RssParameters)
     
     4. Override _list_ in order to list the slots available: 
     ```
-    @throws(classOf[SgdcDownloaderException])
+    @throws(classOf[SgcConnectorException])
     def list(): Seq[RssSlot] = {
         var entries: Array[FeedMessage] = Array.empty
     
@@ -321,7 +321,7 @@ class RssSgdcDownloader(parameters: RssParameters)
         match {
           case Success(v) => v
           case Failure(e) => {
-            throw SgdcDownloaderException(s"Error listing messages", e)
+            throw SgcConnectorException(s"Error listing messages", e)
           }
         }
       }
@@ -329,8 +329,8 @@ class RssSgdcDownloader(parameters: RssParameters)
     
     5. Override _list_ in order to validates the parameters. 
     ```
-    @throws(classOf[SgdcDownloaderException])
-      override def download(slot: FTPSlot, out: OutputStream): Unit = {
+    @throws(classOf[SgcConnectorException])
+      override def fetch(slot: FTPSlot, out: OutputStream): Unit = {
         Try({
           val in = useClient[InputStream](() => {
             client.retrieveFeedMessage(slot.link)
@@ -346,18 +346,18 @@ class RssSgdcDownloader(parameters: RssParameters)
           case Success(v) =>
           case Failure(e) => {
             val msg = 
-            throw SgdcDownloaderException(s"Error downloading slot[$slot]", e)
+            throw SgcConnectorException(s"Error fetching slot[$slot]", e)
           }
         }
       }
     ```
 
-* Create a new type of _SgdcDownloaderFactory_:
+* Create a new type of _SgcConnectorFactory_:
 ```
-object RssSgdcDownloaderFactory extends SgdcDownloaderFactory[RssSlot, RssParameters] {
+object RssSgcConnectorFactory extends SgcConnectorFactory[RssSlot, RssParameters] {
 
-  override def get(parameters: RssParameters): SgdcDownloader[RssSlot, RssParameters] = {
-    new RssSgdcDownloader(parameters)
+  override def get(parameters: RssParameters): SgcConnector[RssSlot, RssParameters] = {
+    new RssSgcConnector(parameters)
   }
 }
 ```
