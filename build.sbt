@@ -14,7 +14,7 @@ parallelExecution in ThisBuild := false
 lazy val commonSettings = Seq(
   organization := "es.alvsanand",
   name := "spark-generic-connector-main",
-  version := "0.2.0-SNAPSHOT",
+  version := "0.2.0",
 
   scalaVersion := "2.11.7",
   crossScalaVersions := Seq("2.10.5", "2.11.8"),
