@@ -22,7 +22,7 @@ This is are the ideas behind the library:
 
 This library requires _Spark 1.5+_
 
-## Using in Apache Spark as a package [Not yet released]
+## Using in Apache Spark as a package
 
 You can use _Generic Connector_ in the _Spark Shell_ adding the packages dependencies:
 
@@ -30,21 +30,21 @@ You can use _Generic Connector_ in the _Spark Shell_ adding the packages depende
 
     * Scala 2.10
     
-            ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_1x_2.10:0.2.0
+            ./bin/spark-shell --packages alvsanand:spark-generic-connector:0.2.0-spark_1x-s_2.10
     
     * Scala 2.11
     
-            ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_1x_2.11:0.2.0
+            ./bin/spark-shell --packages alvsanand:spark-generic-connector:0.2.0-spark_1x-s_2.11
 
 * Spark 2.x:
 
     * Scala 2.10
     
-            ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_2x_2.10:0.2.0
+            ./bin/spark-shell --packages alvsanand:spark-generic-connector:0.2.0-spark_2x-s_2.10
     
     * Scala 2.11
     
-            ./bin/spark-shell --packages es.alvsanand:spark-generic-connector-spark_2x_2.11:0.2.0
+            ./bin/spark-shell --packages alvsanand:spark-generic-connector:0.2.0-spark_2x-s_2.11
 
 ## Linking [Not yet released] as a Scala Library
 You can link against this library in your program at the following coordinates:
