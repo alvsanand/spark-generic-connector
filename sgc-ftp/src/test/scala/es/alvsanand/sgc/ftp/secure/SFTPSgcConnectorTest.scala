@@ -130,7 +130,7 @@ class SFTPSgcConnectorTest extends FlatSpec with Matchers with OptionValues with
       FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val connector = new SFTPSgcConnector(parameters)
 
-    connector.list().map(_.name) should be(List[String]())
+    a[SgcConnectorException] shouldBe thrownBy(connector.list())
   }
 
   it should "fail because invalid user" in {

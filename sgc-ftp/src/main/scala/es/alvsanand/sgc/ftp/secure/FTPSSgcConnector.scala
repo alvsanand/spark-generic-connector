@@ -45,11 +45,13 @@ import scala.util.{Failure, Success, Try}
   *                more details.
   * @param defaultTimeout the default timeout to use (in ms). Default: 120 seconds.
   * @param dataTimeout The timeout used of the data connection (in ms). Default: 1200 seconds.
+  * @param activeMode True if the FTP must mu accessed in an active mode.
   */
 case class FTPSParameters(host: String, port: Int = 990, directory: String,
                           cred: FTPCredentials, kconfig: Option[KeystoreConfig] = None,
                           tconfig: Option[KeystoreConfig] = None,
-                          defaultTimeout: Int = 120000, dataTimeout: Int = 1200000)
+                          defaultTimeout: Int = 120000, dataTimeout: Int = 1200000,
+                          activeMode: Boolean = false)
   extends SgcConnectorParameters {
 }
 
@@ -102,18 +104,16 @@ class FTPSSgcConnector(parameters: FTPSParameters)
     }
   }
 
-  private lazy val client: FTPClient = initClient()
+  private lazy val client: FTPSClient = initClient()
 
   /**
     * Method that initialize the FTPS client.
     * @return The FTPS client
     */
-  private def initClient(): FTPClient = synchronized {
+  private def initClient(): FTPSClient = synchronized {
     logInfo(s"Initiating FTPConnector[$parameters]")
 
     val client: FTPSClient = new FTPSClient()
-
-    client.enterLocalPassiveMode()
 
     client.setDefaultTimeout(parameters.defaultTimeout)
     client.setDataTimeout(parameters.dataTimeout)
@@ -172,6 +172,16 @@ class FTPSSgcConnector(parameters: FTPSParameters)
         throw SgcConnectorException(s"Error logging in with user[${parameters.cred.user}]")
       }
 
+      client.execPBSZ(0)
+      client.execPROT("P")
+
+      if (parameters.activeMode) {
+        client.enterLocalActiveMode()
+      }
+      else {
+        client.enterLocalPassiveMode()
+      }
+
       logInfo(s"Connecting FTPConnector[$parameters, user: ${parameters.cred.user}]")
     }
   }
@@ -218,8 +228,22 @@ class FTPSSgcConnector(parameters: FTPSParameters)
 
       files = useClient[Array[org.apache.commons.net.ftp.FTPFile]](() => {
         client.changeWorkingDirectory(parameters.directory)
+        match {
+          case true => {
+            val files = client.listFiles(".")
 
-        client.listFiles(".")
+            val code = client.getReplyCode()
+            if(!FTPReply.isPositiveCompletion(code)){
+              throw new IOException(s"DIR command did not executed correctly: $code")
+            }
+
+            files
+          }
+          case false => {
+            val code = client.getReplyCode()
+            throw new IOException(s"DIR command did not executed correctly: $code")
+          }
+        }
       })
 
       logDebug(s"Listed files of directory[${parameters.directory}]: [${files.mkString(",")}]")

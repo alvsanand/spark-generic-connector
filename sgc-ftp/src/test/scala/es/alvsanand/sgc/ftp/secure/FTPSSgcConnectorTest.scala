@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream
 import java.nio.file.{Files, Paths}
 import java.util.Date
 
+import es.alvsanand.sgc.core.connector.SgcConnectorException
 import es.alvsanand.sgc.ftp.{FTPCredentials, FTPSlot}
 import org.apache.commons.io.FileUtils
 import org.apache.ftpserver.listener.ListenerFactory
@@ -121,7 +122,7 @@ class FTPSSgcConnectorTest extends FlatSpec with Matchers with OptionValues with
       FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val connector = new FTPSSgcConnector(parameters)
 
-    connector.list().map(_.name) should be(List[String]())
+    a[SgcConnectorException] shouldBe thrownBy(connector.list())
   }
 
   it should "work with anonymous user and existing directory" in {

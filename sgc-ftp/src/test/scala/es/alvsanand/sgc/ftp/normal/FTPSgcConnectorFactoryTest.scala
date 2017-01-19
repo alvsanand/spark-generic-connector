@@ -17,7 +17,7 @@
 
 package es.alvsanand.sgc.ftp.normal
 
-import es.alvsanand.sgc.ftp.FTPCredentials
+import es.alvsanand.sgc.ftp.{FTPCredentials, ProxyConfiguration}
 import org.scalatest._
 
 class FTPSgcConnectorFactoryTest extends FlatSpec with Matchers with OptionValues
@@ -33,7 +33,7 @@ class FTPSgcConnectorFactoryTest extends FlatSpec with Matchers with OptionValue
     a[IllegalArgumentException] shouldBe thrownBy(FTPSgcConnectorFactory
       .get(FTPParameters("host", 21, "directory", FTPCredentials(null))))
     a[IllegalArgumentException] shouldBe thrownBy(FTPSgcConnectorFactory
-      .get(FTPParameters("host", 21, "directory", FTPCredentials("user"), proxyEnabled = true)))
+      .get(FTPParameters("host", 21, "directory", FTPCredentials("user"), proxy = Option(ProxyConfiguration("")))))
   }
 
   it should "work with obligatory parameters" in {
@@ -42,34 +42,21 @@ class FTPSgcConnectorFactoryTest extends FlatSpec with Matchers with OptionValue
       )
     noException should be thrownBy(
       FTPSgcConnectorFactory.get(FTPParameters("host", 21, "directory", FTPCredentials("user"),
-          proxyEnabled = true, proxyHost = Option("proxyHost")))
+          proxy = Option(ProxyConfiguration("proxyHost"))))
       )
   }
 
   it should "work with proxy parameters" in {
+    var p = Option(ProxyConfiguration("proxyHost", user = Option("user")))
     var parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
-      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"))
+      proxy = p)
     noException should be thrownBy(FTPSgcConnectorFactory.get(parameters))
     FTPSgcConnectorFactory.get(parameters).asInstanceOf[FTPSgcConnector].usesProxy() should
       be(true)
 
+    p = Option(ProxyConfiguration("proxyHost", user = Option("user"), password = Option("")))
     parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
-      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
-      proxyPassword = Option(""))
-    noException should be thrownBy(FTPSgcConnectorFactory.get(parameters))
-    FTPSgcConnectorFactory.get(parameters).asInstanceOf[FTPSgcConnector].usesProxy() should
-      be(true)
-
-    parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
-      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
-      proxyPassword = Option("password"))
-    noException should be thrownBy(FTPSgcConnectorFactory.get(parameters))
-    FTPSgcConnectorFactory.get(parameters).asInstanceOf[FTPSgcConnector].usesProxy() should
-      be(true)
-
-    parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
-      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
-      proxyPassword = Option("password"))
+      proxy = p)
     noException should be thrownBy(FTPSgcConnectorFactory.get(parameters))
     FTPSgcConnectorFactory.get(parameters).asInstanceOf[FTPSgcConnector].usesProxy() should
       be(true)

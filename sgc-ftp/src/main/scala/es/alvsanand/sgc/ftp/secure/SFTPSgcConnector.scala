@@ -20,26 +20,25 @@ package es.alvsanand.sgc.ftp.secure
 import java.io._
 import java.util.Date
 
-import com.jcraft.jsch.{ChannelSftp, JSch, KeyPair, Session}
+import com.jcraft.jsch._
 import com.wix.accord.Validator
 import com.wix.accord.dsl.{be, _}
 import es.alvsanand.sgc.core.connector.{SgcConnector, SgcConnectorException, SgcConnectorParameters}
 import es.alvsanand.sgc.core.util.IOUtils
 import es.alvsanand.sgc.ftp._
 
-import collection.JavaConverters._
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 /**
   * The parameters for es.alvsanand.sgc.ftp.secure.SFTPSgcConnector.
   *
-  * @param host The host of the SFTP server [Obligatory].
-  * @param port The port of the SFTP server. Default: 22.
+  * @param host      The host of the SFTP server [Obligatory].
+  * @param port      The port of the SFTP server. Default: 22.
   * @param directory The directory path where the connector will find files [Obligatory].
-  * @param cred The credentials used for logging into the SFTP server [Obligatory].
-  * @param pconfig The private/public key used to log in the SFTP server.
-  * @param timeout the default timeout to use (in ms). Default: 120 seconds.
+  * @param cred      The credentials used for logging into the SFTP server [Obligatory].
+  * @param pconfig   The private/public key used to log in the SFTP server.
+  * @param timeout   the default timeout to use (in ms). Default: 120 seconds.
   */
 case class SFTPParameters(host: String, port: Int = 22, directory: String,
                           cred: FTPCredentials, pconfig: Option[KeyConfig] = None,
@@ -59,7 +58,7 @@ case class SFTPParameters(host: String, port: Int = 22, directory: String,
   *
   *  - The SFTP client will authenticate using the credentials.
   *  - If the keystore is set, the SFTP client will use the private key to authenticate instead of
-  *  the password.
+  * the password.
   *
   * @param parameters The parameters of the SgcConnector
   */
@@ -76,12 +75,12 @@ class SFTPSgcConnector(parameters: SFTPParameters)
       p.directory is notNull
       p.directory is notEmpty
       p.cred is notNull
-      if(p.cred!=null) p.cred.user is notNull
-      if(p.cred!=null) p.cred.user is notEmpty
-      if(p.pconfig.isDefined) p.pconfig.get.privateUrl is notNull
-      if(p.pconfig.isDefined) p.pconfig.get.privateUrl is notEmpty
-      if(p.pconfig.isDefined) p.pconfig.get.publicUrl is notNull
-      if(p.pconfig.isDefined) p.pconfig.get.publicUrl is notEmpty
+      if (p.cred != null) p.cred.user is notNull
+      if (p.cred != null) p.cred.user is notEmpty
+      if (p.pconfig.isDefined) p.pconfig.get.privateUrl is notNull
+      if (p.pconfig.isDefined) p.pconfig.get.privateUrl is notEmpty
+      if (p.pconfig.isDefined) p.pconfig.get.publicUrl is notNull
+      if (p.pconfig.isDefined) p.pconfig.get.publicUrl is notEmpty
       p.timeout should be > 0
     }
   }
@@ -90,6 +89,7 @@ class SFTPSgcConnector(parameters: SFTPParameters)
 
   /**
     * Method that initialize the SFTP client.
+    *
     * @return The SFTP client
     */
   private def initClient(): Session = synchronized {
@@ -98,10 +98,10 @@ class SFTPSgcConnector(parameters: SFTPParameters)
     val jsch = new JSch()
     val client = jsch.getSession(new String(parameters.cred.user), parameters.host, parameters.port)
 
-    if(parameters.cred.password.isDefined){
+    if (parameters.cred.password.isDefined) {
       client.setPassword(parameters.cred.password.get)
     }
-    if(parameters.pconfig.isDefined){
+    if (parameters.pconfig.isDefined) {
       val privateKey = IOUtils.getBytes(parameters.pconfig.get.privateUrl)
       val publicKey = IOUtils.getBytes(parameters.pconfig.get.publicUrl)
 
@@ -197,13 +197,29 @@ class SFTPSgcConnector(parameters: SFTPParameters)
 
       val files = useClient[Seq[FTPSlot]](() => {
         val channel = client.openChannel("sftp").asInstanceOf[ChannelSftp]
+
         channel.connect()
 
         try {
           val files = channel.ls(parameters.directory)
           if (files != null) {
+            channel.cd(parameters.directory)
+
             files.asScala.map(_.asInstanceOf[channel.LsEntry]).toArray
               .filterNot(f => f.getAttrs.isDir || f.getAttrs.isLink)
+              .filter { f =>
+                Try({
+                  var in: InputStream = null
+                  try {
+                    in = channel.get(f.getFilename)
+                  }
+                  finally {
+                    if (in != null) {
+                      in.close()
+                    }
+                  }
+                }).isSuccess
+              }
               .map(f => FTPSlot(s"${f.getFilename}", new Date(f.getAttrs.getMTime * 1000L)))
               .sortBy(_.name)
           }
@@ -212,10 +228,7 @@ class SFTPSgcConnector(parameters: SFTPParameters)
           }
         } catch {
           case e: Exception => {
-            logWarning(s"Error listing files of directory[${parameters.directory}]: " +
-              s"${e.getMessage}")
-
-            Seq.empty[FTPSlot]
+            throw new IOException(s"ls command did not executed correctly", e)
           }
         } finally {
           channel.disconnect()

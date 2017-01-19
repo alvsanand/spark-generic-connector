@@ -23,7 +23,7 @@ import com.wix.accord.Validator
 import com.wix.accord.dsl.{be, _}
 import es.alvsanand.sgc.core.connector.{SgcConnector, SgcConnectorException, SgcConnectorParameters}
 import es.alvsanand.sgc.core.util.IOUtils
-import es.alvsanand.sgc.ftp.{FTPCredentials, FTPSlot}
+import es.alvsanand.sgc.ftp.{FTPCredentials, FTPSlot, ProxyConfiguration}
 import org.apache.commons.net.ftp.{FTPClient, FTPHTTPClient, FTPReply}
 
 import scala.util.{Failure, Success, Try}
@@ -39,16 +39,14 @@ import scala.util.{Failure, Success, Try}
   * @param directory The directory path where the connector will find files [Obligatory].
   * @param defaultTimeout the default timeout to use (in ms). Default: 120 seconds.
   * @param dataTimeout The timeout used of the data connection (in ms). Default: 1200 seconds.
+  * @param proxy The proxy configuration.
+  * @param activeMode True if the FTP must mu accessed in an active mode. Default: false.
   */
 case class FTPParameters(host: String, port: Int = 21, directory: String,
                          cred: FTPCredentials, defaultTimeout: Int = 120000,
-                         dataTimeout: Int = 1200000, proxyEnabled: Boolean = false,
-                         proxyHost: Option[String] = None, proxyPort: Int = 0,
-                         proxyUser: Option[String] = None, proxyPassword: Option[String] = None)
+                         dataTimeout: Int = 1200000, proxy: Option[ProxyConfiguration] = None,
+                         activeMode: Boolean = false)
   extends SgcConnectorParameters {
-  override def toString: String =
-    s"FTPSParameters($host, $port, $cred, $directory, $defaultTimeout, $dataTimeout, " +
-      s"$proxyEnabled, $proxyHost, $proxyPort, $proxyUser, ***)"
 }
 
 /**
@@ -84,9 +82,9 @@ class FTPSgcConnector(parameters: FTPParameters)
       if(p.cred!=null) p.cred.user is notEmpty
       p.defaultTimeout should be > 0
       p.dataTimeout should be > 0
-      if(p.proxyEnabled){
-        p.proxyHost is notNull
-        p.proxyHost is notEmpty
+      if(p.proxy!=null && p.proxy.isDefined){
+        p.proxy.get.host is notNull
+        p.proxy.get.host is notEmpty
       }
     }
   }
@@ -102,13 +100,11 @@ class FTPSgcConnector(parameters: FTPParameters)
 
     logInfo(s"Initiating FTPConnector[$parameters]")
 
-    client = parameters.proxyEnabled match {
-      case true => new FTPHTTPClient(parameters.proxyHost.getOrElse(""), parameters.proxyPort,
-          parameters.proxyUser.getOrElse(""), parameters.proxyPassword.getOrElse(""))
+    client = parameters.proxy match {
+      case Some(p) => new FTPHTTPClient(p.host, p.port,
+          p.user.getOrElse(""), p.password.getOrElse(""))
       case _ => new FTPClient()
     }
-
-    client.enterLocalPassiveMode()
 
     client.setDefaultTimeout(parameters.defaultTimeout)
     client.setDataTimeout(parameters.dataTimeout)
@@ -136,13 +132,20 @@ class FTPSgcConnector(parameters: FTPParameters)
         case _ =>
       }
 
-      val reply = client.getReplyCode();
+      val reply = client.getReplyCode()
 
       if (!FTPReply.isPositiveCompletion(reply)) {
         throw SgcConnectorException(s"Error connecting to server: $reply")
       }
       if (!client.login(parameters.cred.user, parameters.cred.password.getOrElse(""))) {
         throw SgcConnectorException(s"Error logging in with user[${parameters.cred.user}]")
+      }
+
+      if (parameters.activeMode) {
+        client.enterLocalActiveMode()
+      }
+      else {
+        client.enterLocalPassiveMode()
       }
 
       logInfo(s"Connecting FTPConnector[$parameters]")
@@ -191,8 +194,22 @@ class FTPSgcConnector(parameters: FTPParameters)
 
       files = useClient[Array[org.apache.commons.net.ftp.FTPFile]](() => {
         client.changeWorkingDirectory(parameters.directory)
+        match {
+          case true => {
+            val files = client.listFiles(".")
 
-        client.listFiles(".")
+            val code = client.getReplyCode()
+            if(!FTPReply.isPositiveCompletion(code)){
+              throw new IOException(s"DIR command did not executed correctly: $code")
+            }
+
+            files
+          }
+          case false => {
+            val code = client.getReplyCode()
+            throw new IOException(s"DIR command did not executed correctly: $code")
+          }
+        }
       })
 
       logDebug(s"Listed files of directory[${parameters.directory}]: [${files.mkString(",")}]")

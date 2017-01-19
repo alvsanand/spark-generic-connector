@@ -21,7 +21,8 @@ import java.io.ByteArrayOutputStream
 import java.nio.file.{Files, Paths}
 import java.util.Date
 
-import es.alvsanand.sgc.ftp.{FTPCredentials, FTPSlot}
+import es.alvsanand.sgc.core.connector.SgcConnectorException
+import es.alvsanand.sgc.ftp.{FTPCredentials, FTPSlot, ProxyConfiguration}
 import org.apache.ftpserver.listener.ListenerFactory
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory
 import org.apache.ftpserver.usermanager.impl.BaseUser
@@ -81,7 +82,8 @@ class FTPSgcConnectorTest extends FlatSpec with Matchers with OptionValues with 
     a[IllegalArgumentException] shouldBe thrownBy(FTPSgcConnectorFactory
       .get(FTPParameters("host", 21, "directory", FTPCredentials(null))))
     a[IllegalArgumentException] shouldBe thrownBy(FTPSgcConnectorFactory
-      .get(FTPParameters("host", 21, "directory", FTPCredentials("user"), proxyEnabled = true)))
+      .get(FTPParameters("host", 21, "directory", FTPCredentials("user"),
+        proxy = Option(ProxyConfiguration("")))))
   }
 
   it should "work with obligatory parameters" in {
@@ -90,34 +92,21 @@ class FTPSgcConnectorTest extends FlatSpec with Matchers with OptionValues with 
       )
     noException should be thrownBy(
       new FTPSgcConnector(FTPParameters("host", 21, "directory", FTPCredentials("user"),
-        proxyEnabled = true, proxyHost = Option("proxyHost")))
+        proxy = Option(ProxyConfiguration("proxyHost"))))
       )
   }
 
   it should "work with proxy parameters" in {
+    var p = Option(ProxyConfiguration("proxyHost", user = Option("user")))
     var parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
-      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"))
+      proxy = p)
     noException should be thrownBy(new FTPSgcConnector(parameters))
     new FTPSgcConnector(parameters).asInstanceOf[FTPSgcConnector].usesProxy() should
       be(true)
 
+    p = Option(ProxyConfiguration("proxyHost", user = Option("user"), password = Option("")))
     parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
-      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
-      proxyPassword = Option(""))
-    noException should be thrownBy(new FTPSgcConnector(parameters))
-    new FTPSgcConnector(parameters).asInstanceOf[FTPSgcConnector].usesProxy() should
-      be(true)
-
-    parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
-      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
-      proxyPassword = Option("password"))
-    noException should be thrownBy(new FTPSgcConnector(parameters))
-    new FTPSgcConnector(parameters).asInstanceOf[FTPSgcConnector].usesProxy() should
-      be(true)
-
-    parameters = FTPParameters("host", 21, "directory", FTPCredentials("user"),
-      proxyEnabled = true, proxyHost = Option("proxyHost"), proxyUser = Option("user"),
-      proxyPassword = Option("password"))
+      proxy = p)
     noException should be thrownBy(new FTPSgcConnector(parameters))
     new FTPSgcConnector(parameters).asInstanceOf[FTPSgcConnector].usesProxy() should
       be(true)
@@ -128,7 +117,7 @@ class FTPSgcConnectorTest extends FlatSpec with Matchers with OptionValues with 
                                    FTPCredentials(TEST_USER, Option(TEST_PASSWORD)))
     val connector = new FTPSgcConnector(parameters)
 
-    connector.list().map(_.name) should be(List[String]())
+    a[SgcConnectorException] shouldBe thrownBy(connector.list())
   }
 
   it should "work with anonymous user and existing directory" in {
